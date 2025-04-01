@@ -1,6 +1,5 @@
 
 import { Layers } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 interface SidebarHeaderProps {
   collapsed: boolean;
@@ -10,15 +9,15 @@ interface SidebarHeaderProps {
 const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
   return (
     <div 
-      className="p-4 border-b border-erp-gray-200 flex justify-center items-center cursor-pointer" 
+      className="h-16 flex items-center justify-center border-b border-sidebar-border cursor-pointer bg-sidebar"
       onClick={onToggle}
     >
       {collapsed ? (
         <div className="flex justify-center">
-          <Layers className="text-erp-gray-800" size={24} />
+          <Layers className="text-sidebar-foreground" size={24} />
         </div>
       ) : (
-        <h1 className="text-xl font-bold text-erp-gray-800 flex items-center">
+        <h1 className="text-xl font-bold text-sidebar-foreground flex items-center">
           <Layers className="mr-2" size={24} />
           2103 Creative
         </h1>

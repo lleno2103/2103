@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,24 +34,24 @@
 
     --radius: 0.3rem;
 
-    --sidebar-background: 220 13% 18%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 210 20% 98%;
-    --sidebar-primary-foreground: 220 13% 18%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 13% 18%;
+    --sidebar-primary: 220 13% 28%;
+    --sidebar-primary-foreground: 210 20% 98%;
     --sidebar-accent: 220 13% 28%;
     --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 220 13% 28%;
+    --sidebar-border: 220 13% 91%;
     --sidebar-ring: 210 20% 98%;
   }
 
   .dark {
-    --background: 220 13% 18%;
+    --background: 220 15% 14%;
     --foreground: 210 20% 98%;
 
-    --card: 220 13% 18%;
+    --card: 220 15% 14%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 220 13% 18%;
+    --popover: 220 15% 14%;
     --popover-foreground: 210 20% 98%;
 
     --primary: 210 20% 98%;
@@ -73,6 +72,15 @@
     --border: 220 13% 28%;
     --input: 220 13% 28%;
     --ring: 210 20% 90%;
+
+    --sidebar-background: 220 15% 16%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 210 20% 98%;
+    --sidebar-primary-foreground: 220 13% 18%;
+    --sidebar-accent: 220 13% 30%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 13% 30%;
+    --sidebar-ring: 210 20% 98%;
   }
 }
 
@@ -84,40 +92,52 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+  
+  body .bg-white, 
+  body .bg-gray-100,
+  body .bg-gray-50 {
+    @apply bg-background text-foreground;
+  }
+  
+  body .text-black,
+  body .text-gray-800,
+  body .text-gray-900 {
+    @apply text-foreground;
+  }
 }
 
 /* ERP specific custom styles */
 @layer components {
   .erp-paper {
-    @apply bg-erp-gray-50 shadow-sm;
+    @apply bg-card shadow-sm text-card-foreground;
   }
   
   .erp-panel {
-    @apply rounded-md border border-erp-gray-200 bg-white p-4;
+    @apply rounded-md border border-border bg-card p-4 text-card-foreground;
   }
   
   .erp-card {
-    @apply bg-white rounded-md shadow-sm border border-erp-gray-200 transition-all hover:shadow-md;
+    @apply bg-card rounded-md shadow-sm border border-border transition-all hover:shadow-md text-card-foreground;
   }
   
   .erp-input {
-    @apply border border-erp-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-erp-gray-500;
+    @apply border border-input bg-background rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring text-foreground;
   }
   
   .erp-label {
-    @apply text-sm font-medium text-erp-gray-700 mb-1;
+    @apply text-sm font-medium text-foreground mb-1;
   }
   
   .erp-heading {
-    @apply font-medium tracking-tight;
+    @apply font-medium tracking-tight text-foreground;
   }
   
   .erp-table {
-    @apply w-full text-sm text-left;
+    @apply w-full text-sm text-left text-foreground;
   }
   
   .erp-table thead {
-    @apply bg-erp-gray-100 text-erp-gray-700;
+    @apply bg-muted text-foreground;
   }
   
   .erp-table th {
@@ -125,7 +145,7 @@
   }
   
   .erp-table tr {
-    @apply border-b border-erp-gray-200;
+    @apply border-b border-border;
   }
   
   .erp-table td {
@@ -133,18 +153,18 @@
   }
   
   .erp-btn {
-    @apply px-4 py-2 rounded-md font-medium text-white bg-erp-gray-700 hover:bg-erp-gray-800 transition-colors;
+    @apply px-4 py-2 rounded-md font-medium text-primary-foreground bg-primary hover:bg-primary/90 transition-colors;
   }
   
   .erp-btn-secondary {
-    @apply px-4 py-2 rounded-md font-medium text-erp-gray-700 bg-erp-gray-100 hover:bg-erp-gray-200 border border-erp-gray-300 transition-colors;
+    @apply px-4 py-2 rounded-md font-medium text-secondary-foreground bg-secondary hover:bg-secondary/80 border border-border transition-colors;
   }
   
   .erp-sidebar-item {
-    @apply flex items-center space-x-2 px-3 py-2 rounded-md cursor-pointer hover:bg-erp-gray-100;
+    @apply flex items-center space-x-2 px-3 py-2 rounded-md cursor-pointer hover:bg-sidebar-accent hover:text-sidebar-accent-foreground;
   }
   
   .erp-sidebar-item.active {
-    @apply bg-erp-gray-200 font-medium;
+    @apply bg-sidebar-accent text-sidebar-accent-foreground font-medium;
   }
 }

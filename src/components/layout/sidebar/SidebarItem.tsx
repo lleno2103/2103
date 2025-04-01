@@ -12,6 +12,7 @@ export interface SidebarItemProps {
   expanded?: boolean;
   hasSubmenu?: boolean;
   onToggleSubmenu?: () => void;
+  onClick?: () => void;
   collapsed?: boolean;
 }
 
@@ -23,6 +24,7 @@ const SidebarItem = ({
   expanded, 
   hasSubmenu, 
   onToggleSubmenu,
+  onClick,
   collapsed 
 }: SidebarItemProps) => {
   return (
@@ -37,17 +39,20 @@ const SidebarItem = ({
           e.preventDefault();
           onToggleSubmenu();
         }
+        if (onClick) {
+          onClick();
+        }
       }}
     >
-      <div className="text-erp-gray-600">{icon}</div>
+      <div className="text-sidebar-foreground">{icon}</div>
       {!collapsed && (
         <>
-          <span className="flex-1">{title}</span>
+          <span className="flex-1 text-sidebar-foreground">{title}</span>
           {hasSubmenu && (
             <ChevronDown 
               size={16} 
               className={cn(
-                "text-erp-gray-500 transition-transform",
+                "text-sidebar-foreground/70 transition-transform",
                 expanded && "transform rotate-180"
               )} 
             />

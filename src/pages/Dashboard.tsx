@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import PageHeader from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -82,28 +83,28 @@ const Dashboard = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Charts */}
-            <Card className="col-span-1">
+            {/* Charts - Garantir que tenham a mesma altura */}
+            <Card className="col-span-1 h-[350px]">
               <CardHeader>
                 <CardTitle className="text-lg font-medium flex items-center">
                   <BarChart3 size={16} className="mr-2" />
                   Desempenho Mensal
                 </CardTitle>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center bg-erp-gray-50">
-                <p className="text-sm text-erp-gray-500">Gráfico de Desempenho</p>
+              <CardContent className="flex-1 flex items-center justify-center">
+                <p className="text-sm text-muted-foreground">Gráfico de Desempenho</p>
               </CardContent>
             </Card>
             
-            <Card className="col-span-1">
+            <Card className="col-span-1 h-[350px]">
               <CardHeader>
                 <CardTitle className="text-lg font-medium flex items-center">
                   <PieChart size={16} className="mr-2" />
                   Distribuição de Vendas
                 </CardTitle>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center bg-erp-gray-50">
-                <p className="text-sm text-erp-gray-500">Gráfico de Distribuição</p>
+              <CardContent className="flex-1 flex items-center justify-center">
+                <p className="text-sm text-muted-foreground">Gráfico de Distribuição</p>
               </CardContent>
             </Card>
           </div>
@@ -115,27 +116,27 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <div className="bg-red-50 p-3 rounded-md border border-red-100 flex items-center">
+                <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-100 dark:border-red-900/30 flex items-center">
                   <div className="w-2 h-2 rounded-full bg-red-500 mr-3"></div>
                   <div>
                     <p className="text-sm font-medium">Estoque crítico: Produto XYZ-123</p>
-                    <p className="text-xs text-erp-gray-600">Quantidade disponível: 2 unidades</p>
+                    <p className="text-xs text-muted-foreground">Quantidade disponível: 2 unidades</p>
                   </div>
                 </div>
                 
-                <div className="bg-amber-50 p-3 rounded-md border border-amber-100 flex items-center">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-md border border-amber-100 dark:border-amber-900/30 flex items-center">
                   <div className="w-2 h-2 rounded-full bg-amber-500 mr-3"></div>
                   <div>
                     <p className="text-sm font-medium">Fatura vencida: Cliente ABC Ltda</p>
-                    <p className="text-xs text-erp-gray-600">Valor: R$ 5.230,00 - Vencida há 5 dias</p>
+                    <p className="text-xs text-muted-foreground">Valor: R$ 5.230,00 - Vencida há 5 dias</p>
                   </div>
                 </div>
                 
-                <div className="bg-blue-50 p-3 rounded-md border border-blue-100 flex items-center">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-900/30 flex items-center">
                   <div className="w-2 h-2 rounded-full bg-blue-500 mr-3"></div>
                   <div>
                     <p className="text-sm font-medium">Reunião programada: Equipe de Vendas</p>
-                    <p className="text-xs text-erp-gray-600">Hoje às 15:00 - Sala de Conferência</p>
+                    <p className="text-xs text-muted-foreground">Hoje às 15:00 - Sala de Conferência</p>
                   </div>
                 </div>
               </div>

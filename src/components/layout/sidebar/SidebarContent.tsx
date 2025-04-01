@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils';
 interface SidebarContentProps {
   collapsed: boolean;
   activeModule?: string;
+  setActiveModule?: (moduleId: string) => void;
 }
 
-const SidebarContent = ({ collapsed, activeModule = 'dashboard' }: SidebarContentProps) => {
+const SidebarContent = ({ collapsed, activeModule = 'dashboard', setActiveModule }: SidebarContentProps) => {
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
     finance: false,
     sales: false,
@@ -29,6 +30,12 @@ const SidebarContent = ({ collapsed, activeModule = 'dashboard' }: SidebarConten
       [menu]: !prev[menu]
     }));
   };
+  
+  const handleModuleClick = (moduleId: string) => {
+    if (setActiveModule) {
+      setActiveModule(moduleId);
+    }
+  };
 
   return (
     <div className={cn("py-4 space-y-1 flex-grow", collapsed ? "px-2" : "px-3")}>
@@ -42,6 +49,7 @@ const SidebarContent = ({ collapsed, activeModule = 'dashboard' }: SidebarConten
             hasSubmenu={module.hasSubmenu}
             expanded={expandedMenus[module.id]}
             onToggleSubmenu={() => toggleSubmenu(module.id)}
+            onClick={() => handleModuleClick(module.id)}
             collapsed={collapsed}
           />
           

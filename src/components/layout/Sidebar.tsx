@@ -16,12 +16,12 @@ const Sidebar = ({ collapsed = false, onToggle }: SidebarProps) => {
   return (
     <div 
       className={cn(
-        "h-screen bg-white border-r border-erp-gray-200 overflow-y-auto flex flex-col transition-all duration-300",
+        "h-screen bg-sidebar border-r border-sidebar-border overflow-y-auto flex flex-col z-10 transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
     >
       <SidebarHeader collapsed={collapsed} onToggle={onToggle} />
-      <SidebarContent collapsed={collapsed} activeModule={activeModule} />
+      <SidebarContent collapsed={collapsed} activeModule={activeModule} setActiveModule={setActiveModule} />
       <SidebarFooter collapsed={collapsed} />
     </div>
   );
