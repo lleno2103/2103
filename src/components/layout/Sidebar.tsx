@@ -28,6 +28,7 @@ interface SidebarItemProps {
   expanded?: boolean;
   hasSubmenu?: boolean;
   onToggleSubmenu?: () => void;
+  collapsed?: boolean;
 }
 
 const SidebarItem = ({ 
@@ -37,7 +38,8 @@ const SidebarItem = ({
   path, 
   expanded, 
   hasSubmenu, 
-  onToggleSubmenu 
+  onToggleSubmenu,
+  collapsed 
 }: SidebarItemProps) => {
   return (
     <Link 
@@ -54,21 +56,30 @@ const SidebarItem = ({
       }}
     >
       <div className="text-erp-gray-600">{icon}</div>
-      <span className="flex-1">{title}</span>
-      {hasSubmenu && (
-        <ChevronDown 
-          size={16} 
-          className={cn(
-            "text-erp-gray-500 transition-transform",
-            expanded && "transform rotate-180"
-          )} 
-        />
+      {!collapsed && (
+        <>
+          <span className="flex-1">{title}</span>
+          {hasSubmenu && (
+            <ChevronDown 
+              size={16} 
+              className={cn(
+                "text-erp-gray-500 transition-transform",
+                expanded && "transform rotate-180"
+              )} 
+            />
+          )}
+        </>
       )}
     </Link>
   );
 };
 
-const Sidebar = () => {
+interface SidebarProps {
+  collapsed?: boolean;
+  onToggle?: () => void;
+}
+
+const Sidebar = ({ collapsed = false, onToggle }: SidebarProps) => {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
     finance: false,
@@ -81,6 +92,8 @@ const Sidebar = () => {
   });
 
   const toggleSubmenu = (menu: string) => {
+    if (collapsed) return;
+    
     setExpandedMenus(prev => ({
       ...prev,
       [menu]: !prev[menu]
@@ -88,20 +101,35 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-white border-r border-erp-gray-200 overflow-y-auto flex flex-col">
-      <div className="p-4 border-b border-erp-gray-200">
-        <h1 className="text-xl font-bold text-erp-gray-800 flex items-center">
-          <Layers className="mr-2" size={24} />
-          2103 Creative ERP
-        </h1>
+    <div 
+      className={cn(
+        "h-screen bg-white border-r border-erp-gray-200 overflow-y-auto flex flex-col transition-all duration-300",
+        collapsed ? "w-16" : "w-64"
+      )}
+    >
+      <div 
+        className="p-4 border-b border-erp-gray-200 flex justify-center items-center cursor-pointer" 
+        onClick={onToggle}
+      >
+        {collapsed ? (
+          <div className="flex justify-center">
+            <Layers className="text-erp-gray-800" size={24} />
+          </div>
+        ) : (
+          <h1 className="text-xl font-bold text-erp-gray-800 flex items-center">
+            <Layers className="mr-2" size={24} />
+            2103 Creative
+          </h1>
+        )}
       </div>
       
-      <div className="px-3 py-4 space-y-1 flex-grow">
+      <div className={cn("py-4 space-y-1 flex-grow", collapsed ? "px-2" : "px-3")}>
         <SidebarItem 
           icon={<LayoutDashboard size={20} />} 
           title="Dashboard" 
           active={activeModule === 'dashboard'} 
           path="/"
+          collapsed={collapsed}
         />
         
         <SidebarItem 
@@ -112,9 +140,10 @@ const Sidebar = () => {
           hasSubmenu={true}
           expanded={expandedMenus.finance}
           onToggleSubmenu={() => toggleSubmenu('finance')}
+          collapsed={collapsed}
         />
         
-        {expandedMenus.finance && (
+        {expandedMenus.finance && !collapsed && (
           <div className="pl-8 space-y-1 pt-1 pb-1">
             <Link to="/finance/accounting" className="erp-sidebar-item text-sm">Contabilidade</Link>
             <Link to="/finance/treasury" className="erp-sidebar-item text-sm">Tesouraria</Link>
@@ -131,9 +160,10 @@ const Sidebar = () => {
           hasSubmenu={true}
           expanded={expandedMenus.sales}
           onToggleSubmenu={() => toggleSubmenu('sales')}
+          collapsed={collapsed}
         />
         
-        {expandedMenus.sales && (
+        {expandedMenus.sales && !collapsed && (
           <div className="pl-8 space-y-1 pt-1 pb-1">
             <Link to="/sales/orders" className="erp-sidebar-item text-sm">Pedidos</Link>
             <Link to="/sales/customers" className="erp-sidebar-item text-sm">Clientes</Link>
@@ -150,9 +180,10 @@ const Sidebar = () => {
           hasSubmenu={true}
           expanded={expandedMenus.purchases}
           onToggleSubmenu={() => toggleSubmenu('purchases')}
+          collapsed={collapsed}
         />
         
-        {expandedMenus.purchases && (
+        {expandedMenus.purchases && !collapsed && (
           <div className="pl-8 space-y-1 pt-1 pb-1">
             <Link to="/purchases/orders" className="erp-sidebar-item text-sm">Pedidos</Link>
             <Link to="/purchases/suppliers" className="erp-sidebar-item text-sm">Fornecedores</Link>
@@ -168,9 +199,10 @@ const Sidebar = () => {
           hasSubmenu={true}
           expanded={expandedMenus.inventory}
           onToggleSubmenu={() => toggleSubmenu('inventory')}
+          collapsed={collapsed}
         />
         
-        {expandedMenus.inventory && (
+        {expandedMenus.inventory && !collapsed && (
           <div className="pl-8 space-y-1 pt-1 pb-1">
             <Link to="/inventory/items" className="erp-sidebar-item text-sm">Itens</Link>
             <Link to="/inventory/warehouses" className="erp-sidebar-item text-sm">Armazéns</Link>
@@ -187,9 +219,10 @@ const Sidebar = () => {
           hasSubmenu={true}
           expanded={expandedMenus.production}
           onToggleSubmenu={() => toggleSubmenu('production')}
+          collapsed={collapsed}
         />
         
-        {expandedMenus.production && (
+        {expandedMenus.production && !collapsed && (
           <div className="pl-8 space-y-1 pt-1 pb-1">
             <Link to="/production/orders" className="erp-sidebar-item text-sm">Ordens</Link>
             <Link to="/production/planning" className="erp-sidebar-item text-sm">Planejamento</Link>
@@ -205,9 +238,10 @@ const Sidebar = () => {
           hasSubmenu={true}
           expanded={expandedMenus.analytics}
           onToggleSubmenu={() => toggleSubmenu('analytics')}
+          collapsed={collapsed}
         />
         
-        {expandedMenus.analytics && (
+        {expandedMenus.analytics && !collapsed && (
           <div className="pl-8 space-y-1 pt-1 pb-1">
             <Link to="/analytics/dashboards" className="erp-sidebar-item text-sm">Dashboards</Link>
             <Link to="/analytics/reports" className="erp-sidebar-item text-sm">Relatórios</Link>
@@ -220,6 +254,7 @@ const Sidebar = () => {
           title="RH" 
           active={activeModule === 'hr'} 
           path="/hr"
+          collapsed={collapsed}
         />
         
         <SidebarItem 
@@ -227,6 +262,7 @@ const Sidebar = () => {
           title="Projetos" 
           active={activeModule === 'projects'} 
           path="/projects"
+          collapsed={collapsed}
         />
         
         <SidebarItem 
@@ -234,6 +270,7 @@ const Sidebar = () => {
           title="Serviços" 
           active={activeModule === 'services'} 
           path="/services"
+          collapsed={collapsed}
         />
         
         <SidebarItem 
@@ -241,18 +278,32 @@ const Sidebar = () => {
           title="E-commerce" 
           active={activeModule === 'ecommerce'} 
           path="/ecommerce"
+          collapsed={collapsed}
         />
       </div>
       
       <div className="mt-auto border-t border-erp-gray-200 p-4">
-        <div className="erp-sidebar-item">
-          <UserCircle size={20} className="text-erp-gray-600" />
-          <span className="flex-1">Perfil</span>
-        </div>
-        <div className="erp-sidebar-item">
-          <Settings size={20} className="text-erp-gray-600" />
-          <span className="flex-1">Configurações</span>
-        </div>
+        {!collapsed ? (
+          <>
+            <div className="erp-sidebar-item">
+              <UserCircle size={20} className="text-erp-gray-600" />
+              <span className="flex-1">Perfil</span>
+            </div>
+            <div className="erp-sidebar-item">
+              <Settings size={20} className="text-erp-gray-600" />
+              <span className="flex-1">Configurações</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex justify-center py-2">
+              <UserCircle size={20} className="text-erp-gray-600" />
+            </div>
+            <div className="flex justify-center py-2">
+              <Settings size={20} className="text-erp-gray-600" />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
