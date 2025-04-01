@@ -1,5 +1,6 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import SidebarItem from './SidebarItem';
 import SidebarSubmenu from './SidebarSubmenu';
 import { modules } from './sidebarData';
@@ -12,6 +13,7 @@ interface SidebarContentProps {
 }
 
 const SidebarContent = ({ collapsed, activeModule = 'dashboard', setActiveModule }: SidebarContentProps) => {
+  const location = useLocation();
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
     finance: false,
     sales: false,
@@ -21,6 +23,31 @@ const SidebarContent = ({ collapsed, activeModule = 'dashboard', setActiveModule
     analytics: false,
     administration: false,
   });
+
+  // Função para determinar qual menu deve estar aberto com base na rota atual
+  useEffect(() => {
+    const pathname = location.pathname;
+    
+    // Verificar cada módulo para ver se a rota atual pertence a ele
+    modules.forEach(module => {
+      if (module.submenuItems) {
+        const isSubmenuActive = module.submenuItems.some(item => 
+          pathname.includes(item.path)
+        );
+        
+        if (isSubmenuActive) {
+          setExpandedMenus(prev => ({
+            ...prev,
+            [module.id]: true
+          }));
+          
+          if (setActiveModule) {
+            setActiveModule(module.id);
+          }
+        }
+      }
+    });
+  }, [location.pathname, setActiveModule]);
 
   const toggleSubmenu = (menu: string) => {
     if (collapsed) return;

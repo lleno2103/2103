@@ -9,11 +9,11 @@ interface SidebarHeaderProps {
 const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
   return (
     <div 
-      className="h-16 flex items-center justify-center border-b border-sidebar-border cursor-pointer bg-sidebar"
+      className="h-16 flex items-center px-3 border-b border-sidebar-border cursor-pointer bg-sidebar"
       onClick={onToggle}
     >
       {collapsed ? (
-        <div className="flex justify-center">
+        <div className="flex justify-center w-full">
           <Layers className="text-sidebar-foreground" size={24} />
         </div>
       ) : (

@@ -31,7 +31,7 @@ const SidebarItem = ({
     <Link 
       to={path}
       className={cn(
-        "erp-sidebar-item group",
+        "erp-sidebar-item group transition-colors",
         active && "active"
       )}
       onClick={(e) => {
