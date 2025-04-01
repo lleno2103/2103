@@ -17,7 +17,7 @@ const SidebarHeader = ({ collapsed, onToggle }: SidebarHeaderProps) => {
           <Layers className="text-sidebar-foreground" size={24} />
         </div>
       ) : (
-        <h1 className="text-xl font-bold text-sidebar-foreground flex items-center">
+        <h1 className="text-xl font-bold text-sidebar-foreground flex items-center w-full">
           <Layers className="mr-2" size={24} />
           2103 Creative
         </h1>

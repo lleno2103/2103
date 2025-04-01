@@ -1,4 +1,6 @@
+
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
   MessageCircle, 
@@ -22,6 +24,12 @@ interface HeaderProps {
 const Header = ({ onToggleSidebar }: HeaderProps) => {
   const [searchValue, setSearchValue] = useState('');
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Add any logout logic here (clear tokens, etc.)
+    navigate('/login');
+  };
 
   return (
     <header className="h-16 bg-background border-b border-border flex items-center justify-between px-6 sticky top-0 z-10">
@@ -160,7 +168,10 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                 <Settings size={16} className="mr-2 text-foreground" />
                 Configurações
               </button>
-              <button className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center text-destructive">
+              <button 
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center text-red-500"
+              >
                 <LogOut size={16} className="mr-2" />
                 Sair
               </button>
