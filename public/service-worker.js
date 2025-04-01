@@ -1,3 +1,4 @@
+
 // Service Worker for 2103 Creative ERP PWA
 const CACHE_NAME = '2103-erp-cache-v1';
 
@@ -100,6 +101,8 @@ self.addEventListener('fetch', (event) => {
 
 // Handle push notifications
 self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  
   const data = event.data.json();
   const options = {
     body: data.body,
@@ -120,7 +123,9 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url)
-  );
+  if (event.notification.data && event.notification.data.url) {
+    event.waitUntil(
+      clients.openWindow(event.notification.data.url)
+    );
+  }
 });
