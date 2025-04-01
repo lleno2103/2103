@@ -8,16 +8,29 @@ import {
   User,
   Settings,
   LogOut,
-  HelpCircle
+  HelpCircle,
+  Menu
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const Header = () => {
+interface HeaderProps {
+  onToggleSidebar?: () => void;
+}
+
+const Header = ({ onToggleSidebar }: HeaderProps) => {
   const [searchValue, setSearchValue] = useState('');
 
   return (
     <header className="h-16 bg-white border-b border-erp-gray-200 flex items-center justify-between px-6">
       <div className="flex items-center w-96">
+        {onToggleSidebar && (
+          <button 
+            onClick={onToggleSidebar}
+            className="mr-4 p-1.5 rounded-md hover:bg-erp-gray-100"
+          >
+            <Menu size={20} className="text-erp-gray-600" />
+          </button>
+        )}
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-erp-gray-500" size={18} />
           <input
