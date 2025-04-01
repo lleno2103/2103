@@ -7,14 +7,26 @@ import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [passwordError, setPasswordError] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulação de login bem-sucedido
+    
+    if (activeTab === 'register') {
+      if (password !== confirmPassword) {
+        setPasswordError('As senhas não conferem');
+        return;
+      }
+      // Add registration logic here
+    }
+    
+    // Simulate successful login
     navigate('/');
   };
 
@@ -34,13 +46,19 @@ const Login = () => {
         <div className="flex mb-6">
           <button
             className={`flex-1 py-3 border-b-2 transition-colors ${activeTab === 'login' ? 'border-primary text-primary font-medium' : 'border-erp-gray-200 text-erp-gray-500'}`}
-            onClick={() => setActiveTab('login')}
+            onClick={() => {
+              setActiveTab('login');
+              setPasswordError('');
+            }}
           >
             Entrar
           </button>
           <button
             className={`flex-1 py-3 border-b-2 transition-colors ${activeTab === 'register' ? 'border-primary text-primary font-medium' : 'border-erp-gray-200 text-erp-gray-500'}`}
-            onClick={() => setActiveTab('register')}
+            onClick={() => {
+              setActiveTab('register');
+              setPasswordError('');
+            }}
           >
             Registrar
           </button>
@@ -85,6 +103,35 @@ const Login = () => {
                 </button>
               </div>
             </div>
+
+            {activeTab === 'register' && (
+              <div className="space-y-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-erp-gray-700">
+                  Confirmar Senha
+                </label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-erp-gray-400 hover:text-erp-gray-600"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {passwordError && (
+                  <p className="text-sm text-red-600">{passwordError}</p>
+                )}
+              </div>
+            )}
           </div>
 
           {activeTab === 'register' && (
