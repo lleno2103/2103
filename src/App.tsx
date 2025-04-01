@@ -44,7 +44,7 @@ import KPIs from "./pages/analytics/KPIs";
 import HR from "./pages/HR";
 import Projects from "./pages/Projects";
 import Services from "./pages/Services";
-import Ecommerce from "./pages/Ecommerce";
+import Ecommerce from "./pages/E-commerce";
 
 const queryClient = new QueryClient();
 
@@ -95,7 +95,7 @@ const App = () => (
           <Route path="/hr" element={<HR />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/ecommerce" element={<Ecommerce />} />
+          <Route path="/e-commerce" element={<Ecommerce />} />
           
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />

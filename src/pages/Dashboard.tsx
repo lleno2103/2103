@@ -1,107 +1,181 @@
-
-import { 
-  BarChart2, 
-  DollarSign, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  Truck,
-  Clock,
-  AlertCircle
-} from 'lucide-react';
-import StatCard from '@/components/dashboard/StatCard';
-import RecentTransactions from '@/components/dashboard/RecentTransactions';
-import SalesChart from '@/components/dashboard/SalesChart';
-import InventoryStatus from '@/components/dashboard/InventoryStatus';
-import PendingApprovals from '@/components/dashboard/PendingApprovals';
-import ProductionOverview from '@/components/dashboard/ProductionOverview';
+import { useState } from 'react';
+import PageHeader from '@/components/common/PageHeader';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { BarChart3, LineChart, PieChart, Plus } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Dashboard = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Dashboard</h1>
-        <p className="text-erp-gray-600">Visão geral e resumo do seu negócio</p>
-      </div>
+      <PageHeader 
+        title="Dashboard" 
+        description="Visão geral do seu negócio"
+        actions={
+          <Button size="sm">
+            <Plus className="mr-1" size={16} />
+            Adicionar Widget
+          </Button>
+        }
+      />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard 
-          title="Vendas no Mês" 
-          value="R$ 324.652,00" 
-          icon={<DollarSign size={20} />} 
-          change={{ value: "8,2%", positive: true }}
-        />
-        <StatCard 
-          title="Novos Pedidos" 
-          value="128" 
-          icon={<ShoppingCart size={20} />} 
-          change={{ value: "12,5%", positive: true }}
-        />
-        <StatCard 
-          title="Produção Mensal" 
-          value="8.450 m²" 
-          icon={<Package size={20} />} 
-          change={{ value: "3,1%", positive: true }}
-        />
-        <StatCard 
-          title="Clientes Ativos" 
-          value="345" 
-          icon={<Users size={20} />} 
-          change={{ value: "5,2%", positive: true }}
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <SalesChart />
-        </div>
-        <div>
-          <InventoryStatus />
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div>
-          <PendingApprovals />
-        </div>
-        <div>
-          <ProductionOverview />
-        </div>
-        <div>
-          <div className="grid grid-cols-1 gap-4">
-            <StatCard 
-              title="Entregas Pendentes" 
-              value="24" 
-              icon={<Truck size={20} />} 
-              className="h-auto"
-            />
-            <StatCard 
-              title="Chamados Abertos" 
-              value="12" 
-              icon={<AlertCircle size={20} />} 
-              className="h-auto"
-            />
-            <StatCard 
-              title="Tempo Médio de Produção" 
-              value="36 horas" 
-              icon={<Clock size={20} />} 
-              change={{ value: "10,5%", positive: false }}
-              className="h-auto"
-            />
-            <StatCard 
-              title="Eficiência de Produção" 
-              value="87%" 
-              icon={<BarChart2 size={20} />} 
-              change={{ value: "2,3%", positive: true }}
-              className="h-auto"
-            />
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+          <TabsTrigger value="finance">Financeiro</TabsTrigger>
+          <TabsTrigger value="sales">Vendas</TabsTrigger>
+          <TabsTrigger value="inventory">Estoque</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Performance Cards */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">R$ 45.231,89</div>
+                <p className="text-xs text-muted-foreground">
+                  +20.1% em relação ao mês anterior
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Pedidos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">356</div>
+                <p className="text-xs text-muted-foreground">
+                  +12% em relação ao mês anterior
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Clientes Ativos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">2.103</div>
+                <p className="text-xs text-muted-foreground">
+                  +5% em relação ao mês anterior
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Satisfação</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">98%</div>
+                <p className="text-xs text-muted-foreground">
+                  +2% em relação ao mês anterior
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </div>
-      </div>
-      
-      <div>
-        <RecentTransactions />
-      </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Charts */}
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle className="text-lg font-medium flex items-center">
+                  <BarChart3 size={16} className="mr-2" />
+                  Desempenho Mensal
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px] flex items-center justify-center bg-erp-gray-50">
+                <p className="text-sm text-erp-gray-500">Gráfico de Desempenho</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="col-span-1">
+              <CardHeader>
+                <CardTitle className="text-lg font-medium flex items-center">
+                  <PieChart size={16} className="mr-2" />
+                  Distribuição de Vendas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px] flex items-center justify-center bg-erp-gray-50">
+                <p className="text-sm text-erp-gray-500">Gráfico de Distribuição</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Alerts Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-medium">Alertas Prioritários</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="bg-red-50 p-3 rounded-md border border-red-100 flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-red-500 mr-3"></div>
+                  <div>
+                    <p className="text-sm font-medium">Estoque crítico: Produto XYZ-123</p>
+                    <p className="text-xs text-erp-gray-600">Quantidade disponível: 2 unidades</p>
+                  </div>
+                </div>
+                
+                <div className="bg-amber-50 p-3 rounded-md border border-amber-100 flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-amber-500 mr-3"></div>
+                  <div>
+                    <p className="text-sm font-medium">Fatura vencida: Cliente ABC Ltda</p>
+                    <p className="text-xs text-erp-gray-600">Valor: R$ 5.230,00 - Vencida há 5 dias</p>
+                  </div>
+                </div>
+                
+                <div className="bg-blue-50 p-3 rounded-md border border-blue-100 flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mr-3"></div>
+                  <div>
+                    <p className="text-sm font-medium">Reunião programada: Equipe de Vendas</p>
+                    <p className="text-xs text-erp-gray-600">Hoje às 15:00 - Sala de Conferência</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="finance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Visão Financeira</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Conteúdo da visão financeira em construção...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="sales" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Visão de Vendas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Conteúdo da visão de vendas em construção...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="inventory" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Visão de Estoque</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Conteúdo da visão de estoque em construção...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

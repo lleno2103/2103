@@ -120,7 +120,7 @@ export const modules = [
     id: 'ecommerce',
     title: 'E-commerce',
     icon: Globe,
-    path: '/ecommerce',
+    path: '/e-commerce',
     hasSubmenu: false
   }
 ];
