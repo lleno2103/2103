@@ -44,7 +44,7 @@ import KPIs from "./pages/analytics/KPIs";
 import HR from "./pages/HR";
 import Projects from "./pages/Projects";
 import Services from "./pages/Services";
-import Ecommerce from "./pages/E-commerce";
+import Ecommerce from "./pages/Ecommerce";
 
 const queryClient = new QueryClient();
 
