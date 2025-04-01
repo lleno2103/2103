@@ -200,7 +200,7 @@ const KPIs = () => {
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <p className="font-medium">Taxa de Defeitos</p>
-                      <p className="text-xs text-muted-foreground">Meta: < 1%</p>
+                      <p className="text-xs text-muted-foreground">Meta: {'<'} 1%</p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-lg">0.8%</p>
