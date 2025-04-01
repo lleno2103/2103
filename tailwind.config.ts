@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Quicksand', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -61,7 +65,21 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom ERP colors
+				'erp-gray': {
+					50: '#f8f9fa',
+					100: '#f1f3f5',
+					200: '#e9ecef',
+					300: '#dee2e6',
+					400: '#ced4da',
+					500: '#adb5bd',
+					600: '#868e96',
+					700: '#495057',
+					800: '#343a40',
+					900: '#212529',
+				},
+				'erp-accent': '#6c757d',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
