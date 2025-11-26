@@ -1,17 +1,19 @@
 
 import { useNavigate } from 'react-router-dom';
 import { UserCircle, Settings, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 interface SidebarFooterProps {
   collapsed: boolean;
 }
 
 const SidebarFooter = ({ collapsed }: SidebarFooterProps) => {
+  const { signOut } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Add any logout logic here (clear tokens, etc.)
-    navigate('/login');
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
   };
 
   return (

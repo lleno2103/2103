@@ -15,7 +15,9 @@ import {
   Moon
 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/hooks/use-auth";
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -24,11 +26,38 @@ interface HeaderProps {
 const Header = ({ onToggleSidebar }: HeaderProps) => {
   const [searchValue, setSearchValue] = useState('');
   const { theme, setTheme } = useTheme();
+  const { user, userRole, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Add any logout logic here (clear tokens, etc.)
-    navigate('/login');
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  const getRoleBadgeColor = () => {
+    switch (userRole) {
+      case 'admin':
+        return 'bg-red-500 text-white';
+      case 'manager':
+        return 'bg-blue-500 text-white';
+      case 'operator':
+        return 'bg-green-500 text-white';
+      default:
+        return 'bg-gray-500 text-white';
+    }
+  };
+
+  const getRoleLabel = () => {
+    switch (userRole) {
+      case 'admin':
+        return 'Administrador';
+      case 'manager':
+        return 'Gerente';
+      case 'operator':
+        return 'Operador';
+      default:
+        return '';
+    }
   };
 
   return (
@@ -150,14 +179,30 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
               <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                 <User size={18} className="text-foreground" />
               </div>
-              <span className="text-sm font-medium">Admin</span>
+              <div className="flex flex-col items-start">
+                <span className="text-sm font-medium">
+                  {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
+                </span>
+                {userRole && (
+                  <Badge variant="secondary" className={`text-xs ${getRoleBadgeColor()}`}>
+                    {getRoleLabel()}
+                  </Badge>
+                )}
+              </div>
               <ChevronDown size={16} className="text-muted-foreground" />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-56 p-0" align="end">
             <div className="p-3 border-b border-border">
-              <p className="font-medium">Admin</p>
-              <p className="text-xs text-muted-foreground">admin@2103creative.com</p>
+              <p className="font-medium">
+                {user?.user_metadata?.full_name || 'Usuário'}
+              </p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
+              {userRole && (
+                <Badge variant="secondary" className={`text-xs mt-1 ${getRoleBadgeColor()}`}>
+                  {getRoleLabel()}
+                </Badge>
+              )}
             </div>
             <div className="py-2">
               <button className="w-full text-left px-4 py-2 text-sm hover:bg-muted flex items-center">
