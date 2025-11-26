@@ -4,9 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/use-theme";
+import { AuthProvider } from "@/hooks/use-auth";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 
 // Finance routes
 import Accounting from "./pages/finance/Accounting";
@@ -52,58 +54,60 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="light">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Index />} />
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             
             {/* Finance routes */}
-            <Route path="/finance/accounting" element={<Accounting />} />
-            <Route path="/finance/treasury" element={<Treasury />} />
-            <Route path="/finance/taxes" element={<Taxes />} />
-            <Route path="/finance/reports" element={<FinanceReports />} />
+            <Route path="/finance/accounting" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Accounting /></ProtectedRoute>} />
+            <Route path="/finance/treasury" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Treasury /></ProtectedRoute>} />
+            <Route path="/finance/taxes" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Taxes /></ProtectedRoute>} />
+            <Route path="/finance/reports" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><FinanceReports /></ProtectedRoute>} />
             
             {/* Sales routes */}
-            <Route path="/sales/orders" element={<Orders />} />
-            <Route path="/sales/customers" element={<Customers />} />
-            <Route path="/sales/pricing" element={<Pricing />} />
-            <Route path="/sales/campaigns" element={<Campaigns />} />
+            <Route path="/sales/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+            <Route path="/sales/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+            <Route path="/sales/pricing" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Pricing /></ProtectedRoute>} />
+            <Route path="/sales/campaigns" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Campaigns /></ProtectedRoute>} />
             
             {/* Purchases routes */}
-            <Route path="/purchases/orders" element={<PurchaseOrders />} />
-            <Route path="/purchases/suppliers" element={<Suppliers />} />
-            <Route path="/purchases/quotations" element={<Quotations />} />
+            <Route path="/purchases/orders" element={<ProtectedRoute><PurchaseOrders /></ProtectedRoute>} />
+            <Route path="/purchases/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
+            <Route path="/purchases/quotations" element={<ProtectedRoute><Quotations /></ProtectedRoute>} />
             
             {/* Inventory routes */}
-            <Route path="/inventory/items" element={<Items />} />
-            <Route path="/inventory/warehouses" element={<Warehouses />} />
-            <Route path="/inventory/transfers" element={<Transfers />} />
-            <Route path="/inventory/count" element={<Inventory />} />
+            <Route path="/inventory/items" element={<ProtectedRoute><Items /></ProtectedRoute>} />
+            <Route path="/inventory/warehouses" element={<ProtectedRoute><Warehouses /></ProtectedRoute>} />
+            <Route path="/inventory/transfers" element={<ProtectedRoute><Transfers /></ProtectedRoute>} />
+            <Route path="/inventory/count" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
             
             {/* Production routes */}
-            <Route path="/production/orders" element={<ProductionOrders />} />
-            <Route path="/production/planning" element={<Planning />} />
-            <Route path="/production/resources" element={<Resources />} />
+            <Route path="/production/orders" element={<ProtectedRoute><ProductionOrders /></ProtectedRoute>} />
+            <Route path="/production/planning" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Planning /></ProtectedRoute>} />
+            <Route path="/production/resources" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Resources /></ProtectedRoute>} />
             
             {/* Analytics routes */}
-            <Route path="/analytics/dashboards" element={<AnalyticsDashboards />} />
-            <Route path="/analytics/reports" element={<AnalyticsReports />} />
-            <Route path="/analytics/kpis" element={<KPIs />} />
+            <Route path="/analytics/dashboards" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><AnalyticsDashboards /></ProtectedRoute>} />
+            <Route path="/analytics/reports" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><AnalyticsReports /></ProtectedRoute>} />
+            <Route path="/analytics/kpis" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><KPIs /></ProtectedRoute>} />
             
             {/* Other module pages */}
-            <Route path="/hr" element={<HR />} />
-            <Route path="/projects" element={<Projects />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/e-commerce" element={<Ecommerce />} />
+            <Route path="/hr" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><HR /></ProtectedRoute>} />
+            <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+            <Route path="/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
+            <Route path="/e-commerce" element={<ProtectedRoute><Ecommerce /></ProtectedRoute>} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+      </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
