@@ -6,11 +6,21 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Filter, ImageIcon, Info, Package, Plus, Search, FileText  
+  Filter, ImageIcon, Info, Loader2, Package, Plus, Search, FileText  
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useItems } from '@/hooks/use-items';
+import { useState } from 'react';
 
 const Items = () => {
+  const { items, isLoading } = useItems();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredItems = items?.filter(item =>
+    item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.code.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -47,6 +57,8 @@ const Items = () => {
                     <input
                       className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       placeholder="Buscar item..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
                   <div className="flex gap-2">
@@ -75,76 +87,52 @@ const Items = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <div className="w-10 h-10 rounded bg-erp-gray-100 flex items-center justify-center">
-                            <ImageIcon size={16} className="text-erp-gray-400" />
-                          </div>
-                        </TableCell>
-                        <TableCell>P-0001</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">Notebook Pro X5</p>
-                            <p className="text-xs text-muted-foreground">Intel i7, 16GB, SSD 512GB</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>UN</TableCell>
-                        <TableCell>Informática</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                            <span>25</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">R$ 5.490,00</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <div className="w-10 h-10 rounded bg-erp-gray-100 flex items-center justify-center">
-                            <ImageIcon size={16} className="text-erp-gray-400" />
-                          </div>
-                        </TableCell>
-                        <TableCell>P-0002</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">Monitor LED 24"</p>
-                            <p className="text-xs text-muted-foreground">Full HD, HDMI, DP</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>UN</TableCell>
-                        <TableCell>Informática</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
-                            <span>8</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">R$ 890,00</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <div className="w-10 h-10 rounded bg-erp-gray-100 flex items-center justify-center">
-                            <ImageIcon size={16} className="text-erp-gray-400" />
-                          </div>
-                        </TableCell>
-                        <TableCell>P-0003</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">Impressora Laser</p>
-                            <p className="text-xs text-muted-foreground">Wi-Fi, Duplex, 30ppm</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>UN</TableCell>
-                        <TableCell>Informática</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
-                            <span>2</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">R$ 1.290,00</TableCell>
-                      </TableRow>
-                      {/* Mais linhas seriam adicionadas aqui */}
+                      {isLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredItems && filteredItems.length > 0 ? (
+                        filteredItems.map((item) => {
+                          const totalStock = item.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
+                          const stockStatus = totalStock <= 5 ? 'red' : totalStock <= 10 ? 'amber' : 'green';
+                          
+                          return (
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                                  <ImageIcon size={16} className="text-muted-foreground" />
+                                </div>
+                              </TableCell>
+                              <TableCell>{item.code}</TableCell>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{item.description}</p>
+                                  {item.details && <p className="text-xs text-muted-foreground">{item.details}</p>}
+                                </div>
+                              </TableCell>
+                              <TableCell>{item.unit}</TableCell>
+                              <TableCell>-</TableCell>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  <span className={`w-2 h-2 rounded-full bg-${stockStatus}-500 mr-2`}></span>
+                                  <span>{totalStock}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_value)}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                            Nenhum item encontrado
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
