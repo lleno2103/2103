@@ -6,11 +6,22 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  BarChart, FileText, Filter, Plus, Search, Users 
+  BarChart, FileText, Filter, Loader2, Plus, Search, Users 
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useCustomers } from '@/hooks/use-customers';
+import { useState } from 'react';
 
 const Customers = () => {
+  const { customers, isLoading } = useCustomers();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredCustomers = customers?.filter(customer =>
+    customer.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.tax_id.includes(searchTerm)
+  );
+
   return (
     <MainLayout>
       <div className="space-y-6">
@@ -47,6 +58,8 @@ const Customers = () => {
                     <input
                       className="pl-8 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       placeholder="Buscar cliente..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
                   <div className="flex gap-2">
@@ -74,76 +87,51 @@ const Customers = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell>C-0001</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">Empresa ABC Ltda</p>
-                            <p className="text-xs text-muted-foreground">11.222.333/0001-44</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p>João Silva</p>
-                            <p className="text-xs text-muted-foreground">(11) 98765-4321</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>São Paulo/SP</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                            <span>A+</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">R$ 156.430,00</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>C-0002</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">Comércio XYZ Eireli</p>
-                            <p className="text-xs text-muted-foreground">33.444.555/0001-66</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p>Maria Santos</p>
-                            <p className="text-xs text-muted-foreground">(21) 98765-1234</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>Rio de Janeiro/RJ</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>
-                            <span>B</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">R$ 78.950,00</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>C-0003</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">Indústria 123 S/A</p>
-                            <p className="text-xs text-muted-foreground">55.666.777/0001-88</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p>Carlos Oliveira</p>
-                            <p className="text-xs text-muted-foreground">(31) 99876-5432</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>Belo Horizonte/MG</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className="w-2 h-2 rounded-full bg-amber-500 mr-2"></span>
-                            <span>C</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">R$ 45.780,00</TableCell>
-                      </TableRow>
-                      {/* Mais linhas seriam adicionadas aqui */}
+                      {isLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredCustomers && filteredCustomers.length > 0 ? (
+                        filteredCustomers.map((customer) => (
+                          <TableRow key={customer.id}>
+                            <TableCell>{customer.code}</TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{customer.company_name}</p>
+                                <p className="text-xs text-muted-foreground">{customer.tax_id}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p>{customer.contact_name || '-'}</p>
+                                <p className="text-xs text-muted-foreground">{customer.contact_phone || '-'}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>{customer.city && customer.state ? `${customer.city}/${customer.state}` : '-'}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <span className={`w-2 h-2 rounded-full mr-2 ${
+                                  customer.score === 'A+' || customer.score === 'A' ? 'bg-green-500' :
+                                  customer.score === 'B' ? 'bg-blue-500' :
+                                  'bg-amber-500'
+                                }`}></span>
+                                <span>{customer.score || 'N/A'}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(customer.total_value)}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                            Nenhum cliente encontrado
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
