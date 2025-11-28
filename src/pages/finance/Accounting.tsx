@@ -1,26 +1,34 @@
 
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  FileText, BarChart, Download, Plus 
+  FileText, BarChart, Download, Loader2
 } from 'lucide-react';
+import { useAccountingEntries } from '@/hooks/use-accounting';
+import { NewAccountingEntryDialog } from '@/components/finance/NewAccountingEntryDialog';
+import { format } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 const Accounting = () => {
+  const { entries, isLoading } = useAccountingEntries();
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <PageHeader 
           title="Contabilidade" 
           description="Gestão contábil e financeira"
-          actions={
-            <Button>
-              <Plus size={16} className="mr-2" />
-              Novo Lançamento
-            </Button>
-          }
+          actions={<NewAccountingEntryDialog />}
         />
         
         <Tabs defaultValue="ledger" className="space-y-4">
@@ -39,10 +47,48 @@ const Accounting = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="mb-4">Visualize e gerencie o livro razão da sua empresa.</p>
-                <div className="border rounded-md p-4 text-center">
-                  <p className="text-sm text-erp-gray-500">Livro razão em construção...</p>
-                </div>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : entries && entries.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Conta</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead>Documento</TableHead>
+                          <TableHead className="text-right">Débito</TableHead>
+                          <TableHead className="text-right">Crédito</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {entries.map((entry) => (
+                          <TableRow key={entry.id}>
+                            <TableCell>{format(new Date(entry.entry_date), 'dd/MM/yyyy')}</TableCell>
+                            <TableCell>
+                              {entry.account?.code} - {entry.account?.name}
+                            </TableCell>
+                            <TableCell>{entry.description}</TableCell>
+                            <TableCell>{entry.document_number || '-'}</TableCell>
+                            <TableCell className="text-right font-medium">
+                              {entry.debit > 0 ? formatCurrency(entry.debit) : '-'}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">
+                              {entry.credit > 0 ? formatCurrency(entry.credit) : '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhum lançamento encontrado
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
