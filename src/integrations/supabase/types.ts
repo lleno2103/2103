@@ -99,6 +99,42 @@ export type Database = {
           },
         ]
       }
+      bank_accounts: {
+        Row: {
+          account_number: string
+          active: boolean | null
+          balance: number | null
+          bank_name: string
+          code: string
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          account_number: string
+          active?: boolean | null
+          balance?: number | null
+          bank_name: string
+          code: string
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          account_number?: string
+          active?: boolean | null
+          balance?: number | null
+          bank_name?: string
+          code?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       customers: {
         Row: {
           active: boolean | null
@@ -243,6 +279,62 @@ export type Database = {
             columns: ["department_id"]
             isOneToOne: false
             referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          bank_account_id: string | null
+          category: string
+          created_at: string | null
+          created_by: string | null
+          description: string
+          document_number: string | null
+          id: string
+          status: string | null
+          transaction_date: string
+          transaction_number: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          bank_account_id?: string | null
+          category: string
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          document_number?: string | null
+          id?: string
+          status?: string | null
+          transaction_date?: string
+          transaction_number: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_account_id?: string | null
+          category?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          document_number?: string | null
+          id?: string
+          status?: string | null
+          transaction_date?: string
+          transaction_number?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -835,6 +927,51 @@ export type Database = {
           state?: string | null
           tax_id?: string
           trade_name?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tax_records: {
+        Row: {
+          amount: number
+          created_at: string | null
+          created_by: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          payment_date: string | null
+          record_number: string
+          reference_period: string
+          status: string | null
+          tax_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          created_by?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          payment_date?: string | null
+          record_number: string
+          reference_period: string
+          status?: string | null
+          tax_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          created_by?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string | null
+          record_number?: string
+          reference_period?: string
+          status?: string | null
+          tax_type?: string
           updated_at?: string | null
         }
         Relationships: []
