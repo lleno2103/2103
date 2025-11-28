@@ -1,0 +1,93 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+export interface AccountingAccount {
+  id: string;
+  code: string;
+  name: string;
+  type: string;
+  parent_id: string | null;
+  active: boolean;
+}
+
+export interface AccountingEntry {
+  id: string;
+  entry_date: string;
+  account_id: string;
+  description: string;
+  document_number: string | null;
+  debit: number;
+  credit: number;
+  created_at: string;
+  account?: AccountingAccount;
+}
+
+export const useAccountingAccounts = () => {
+  return useQuery({
+    queryKey: ['accounting-accounts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('accounting_accounts')
+        .select('*')
+        .eq('active', true)
+        .order('code');
+      
+      if (error) throw error;
+      return data as AccountingAccount[];
+    },
+  });
+};
+
+export const useAccountingEntries = () => {
+  const queryClient = useQueryClient();
+
+  const { data: entries, isLoading } = useQuery({
+    queryKey: ['accounting-entries'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('accounting_entries')
+        .select(`
+          *,
+          account:accounting_accounts(*)
+        `)
+        .order('entry_date', { ascending: false });
+      
+      if (error) throw error;
+      return data as AccountingEntry[];
+    },
+  });
+
+  const createEntry = useMutation({
+    mutationFn: async (entry: {
+      entry_date: string;
+      account_id: string;
+      description: string;
+      document_number?: string;
+      debit: number;
+      credit: number;
+    }) => {
+      const { data, error } = await supabase
+        .from('accounting_entries')
+        .insert(entry)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounting-entries'] });
+      toast.success('Lançamento criado com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao criar lançamento: ' + error.message);
+    },
+  });
+
+  return {
+    entries,
+    isLoading,
+    createEntry,
+  };
+};

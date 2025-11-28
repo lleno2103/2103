@@ -1,26 +1,42 @@
 
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  ArrowDownUp, CreditCard, DollarSign, Plus, Wallet 
+  ArrowDownUp, CreditCard, Wallet, Loader2, ArrowUpCircle, ArrowDownCircle
 } from 'lucide-react';
+import { useFinancialTransactions, useBankAccounts } from '@/hooks/use-treasury';
+import { NewTransactionDialog } from '@/components/finance/NewTransactionDialog';
+import { format } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 const Treasury = () => {
+  const { transactions, isLoading } = useFinancialTransactions();
+  const { data: accounts } = useBankAccounts();
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
+  const totalBalance = accounts?.reduce((sum, acc) => sum + acc.balance, 0) || 0;
+  const monthFlow = transactions?.filter(t => 
+    new Date(t.transaction_date).getMonth() === new Date().getMonth()
+  ).reduce((sum, t) => {
+    return sum + (t.type === 'income' ? t.amount : -t.amount);
+  }, 0) || 0;
+
   return (
     <MainLayout>
       <div className="space-y-6">
         <PageHeader 
           title="Tesouraria" 
           description="Gestão de fluxo de caixa e contas"
-          actions={
-            <Button>
-              <Plus size={16} className="mr-2" />
-              Nova Transação
-            </Button>
-          }
+          actions={<NewTransactionDialog />}
         />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -32,8 +48,8 @@ const Treasury = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">R$ 258.436,78</div>
-              <p className="text-xs text-erp-gray-500 mt-1">Atualizado em 01/04/2023</p>
+              <div className="text-2xl font-bold">{formatCurrency(totalBalance)}</div>
+              <p className="text-xs text-muted-foreground mt-1">Todas as contas</p>
             </CardContent>
           </Card>
           
@@ -45,8 +61,10 @@ const Treasury = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">+ R$ 43.721,50</div>
-              <p className="text-xs text-erp-gray-500 mt-1">Abril/2023</p>
+              <div className={`text-2xl font-bold ${monthFlow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {monthFlow >= 0 ? '+ ' : '- '}{formatCurrency(Math.abs(monthFlow))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{format(new Date(), 'MMMM/yyyy')}</p>
             </CardContent>
           </Card>
           
@@ -58,8 +76,8 @@ const Treasury = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
-              <p className="text-xs text-erp-gray-500 mt-1">Ativas</p>
+              <div className="text-2xl font-bold">{accounts?.length || 0}</div>
+              <p className="text-xs text-muted-foreground mt-1">Ativas</p>
             </CardContent>
           </Card>
         </div>
@@ -75,10 +93,62 @@ const Treasury = () => {
           <TabsContent value="cashflow" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-medium">Fluxo de Caixa</CardTitle>
+                <CardTitle className="text-lg font-medium">Transações Recentes</CardTitle>
               </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center bg-erp-gray-50">
-                <p className="text-sm text-erp-gray-500">Gráfico de fluxo de caixa em construção...</p>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : transactions && transactions.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Número</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead>Categoria</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions.slice(0, 10).map((transaction) => (
+                          <TableRow key={transaction.id}>
+                            <TableCell>{format(new Date(transaction.transaction_date), 'dd/MM/yyyy')}</TableCell>
+                            <TableCell className="font-mono text-sm">{transaction.transaction_number}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                {transaction.type === 'income' ? (
+                                  <ArrowUpCircle className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <ArrowDownCircle className="h-4 w-4 text-red-600" />
+                                )}
+                                <span>{transaction.type === 'income' ? 'Receita' : 'Despesa'}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{transaction.category}</TableCell>
+                            <TableCell className="max-w-xs truncate">{transaction.description}</TableCell>
+                            <TableCell className={`text-right font-medium ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                              {transaction.type === 'income' ? '+ ' : '- '}{formatCurrency(transaction.amount)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={transaction.status === 'completed' ? 'default' : transaction.status === 'pending' ? 'secondary' : 'destructive'}>
+                                {transaction.status === 'completed' ? 'Concluído' : transaction.status === 'pending' ? 'Pendente' : 'Cancelado'}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhuma transação encontrada
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -89,40 +159,28 @@ const Treasury = () => {
                 <CardTitle className="text-lg font-medium">Contas Bancárias</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border rounded-md flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">Banco ABC</p>
-                      <p className="text-sm text-erp-gray-500">Conta Corrente - 12345-6</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">R$ 142.321,45</p>
-                      <p className="text-xs text-erp-gray-500">Atualizado hoje</p>
-                    </div>
+                {accounts && accounts.length > 0 ? (
+                  <div className="space-y-4">
+                    {accounts.map((account) => (
+                      <div key={account.id} className="p-4 border rounded-md flex justify-between items-center">
+                        <div>
+                          <p className="font-medium">{account.bank_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {account.name} - {account.account_number}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold">{formatCurrency(account.balance)}</p>
+                          <p className="text-xs text-muted-foreground">Código: {account.code}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  
-                  <div className="p-4 border rounded-md flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">Banco XYZ</p>
-                      <p className="text-sm text-erp-gray-500">Conta Corrente - 65432-1</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">R$ 89.745,33</p>
-                      <p className="text-xs text-erp-gray-500">Atualizado hoje</p>
-                    </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhuma conta encontrada
                   </div>
-                  
-                  <div className="p-4 border rounded-md flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">Banco DEF</p>
-                      <p className="text-sm text-erp-gray-500">Conta Investimento - 98765-4</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">R$ 26.370,00</p>
-                      <p className="text-xs text-erp-gray-500">Atualizado hoje</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
