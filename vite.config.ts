@@ -25,8 +25,4 @@ export default defineConfig(({ mode }) => ({
       port: 8080
     }
   },
-  define: {
-    // Make sure the token is properly defined with fallback
-    __WS_TOKEN__: JSON.stringify(process.env.VITE_WS_TOKEN || 'development-token')
-  }
 }));
