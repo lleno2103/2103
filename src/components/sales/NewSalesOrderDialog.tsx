@@ -14,8 +14,7 @@ import { format } from 'date-fns';
 
 const orderSchema = z.object({
     customer_id: z.string().min(1, 'Cliente é obrigatório'),
-    issue_date: z.string().min(1, 'Data de emissão é obrigatória'),
-    delivery_date: z.string().optional(),
+    order_date: z.string().min(1, 'Data de emissão é obrigatória'),
     status: z.string().default('draft'),
     notes: z.string().optional(),
 });
@@ -30,24 +29,21 @@ export const NewSalesOrderDialog = () => {
     const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<OrderFormData>({
         resolver: zodResolver(orderSchema),
         defaultValues: {
-            issue_date: format(new Date(), 'yyyy-MM-dd'),
+            order_date: format(new Date(), 'yyyy-MM-dd'),
             status: 'draft',
         }
     });
 
     const onSubmit = async (data: OrderFormData) => {
-        // Generate a temporary number or let backend handle it. 
-        // For now we'll let backend handle 'number' if it's auto-increment, 
-        // or generate one here. Let's assume we send what we have.
-        // The table definition might require 'number'. Let's check or assume we can send a timestamp-based one for now if needed.
-        // Actually, usually ERPs have a sequence. I'll assume the backend or a trigger handles it, or I'll generate a simple one.
-
         const orderNumber = `PV-${Date.now().toString().slice(-6)}`;
 
         await createOrder.mutateAsync({
-            ...data,
-            number: orderNumber,
-            total_amount: 0,
+            customer_id: data.customer_id,
+            order_date: data.order_date,
+            status: data.status,
+            notes: data.notes,
+            order_number: orderNumber,
+            total_value: 0,
         });
         reset();
         setOpen(false);
@@ -83,16 +79,10 @@ export const NewSalesOrderDialog = () => {
                         {errors.customer_id && <p className="text-sm text-destructive">{errors.customer_id.message}</p>}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="issue_date">Data Emissão *</Label>
-                            <Input type="date" id="issue_date" {...register('issue_date')} />
-                            {errors.issue_date && <p className="text-sm text-destructive">{errors.issue_date.message}</p>}
-                        </div>
-                        <div>
-                            <Label htmlFor="delivery_date">Data Entrega</Label>
-                            <Input type="date" id="delivery_date" {...register('delivery_date')} />
-                        </div>
+                    <div>
+                        <Label htmlFor="order_date">Data Emissão *</Label>
+                        <Input type="date" id="order_date" {...register('order_date')} />
+                        {errors.order_date && <p className="text-sm text-destructive">{errors.order_date.message}</p>}
                     </div>
 
                     <div>

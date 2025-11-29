@@ -19,7 +19,7 @@ const Orders = () => {
   const [editingOrder, setEditingOrder] = useState<SalesOrder | null>(null);
 
   const filteredOrders = orders?.filter(order =>
-    order.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.order_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.customer?.company_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -124,9 +124,9 @@ const Orders = () => {
                       ) : filteredOrders && filteredOrders.length > 0 ? (
                         filteredOrders.map((order) => (
                           <TableRow key={order.id}>
-                            <TableCell className="font-medium">{order.number}</TableCell>
+                            <TableCell className="font-medium">{order.order_number}</TableCell>
                             <TableCell>
-                              {order.issue_date ? format(new Date(order.issue_date), 'dd/MM/yyyy') : '-'}
+                              {order.order_date ? format(new Date(order.order_date), 'dd/MM/yyyy') : '-'}
                             </TableCell>
                             <TableCell>{order.customer?.company_name || 'Cliente não encontrado'}</TableCell>
                             <TableCell>
@@ -136,17 +136,8 @@ const Orders = () => {
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
-                              {/* Total calculation might need to be done via a separate query or sum of items if not stored in header. 
-                                  For now assuming it's not stored or we need to calculate it. 
-                                  Actually, my hook doesn't fetch items for the list to avoid N+1. 
-                                  I should probably store total_amount in sales_orders or fetch it.
-                                  The table definition has total_amount? Let's check types.ts or just assume it does or I added it.
-                                  Wait, I didn't check types.ts for total_amount. 
-                                  If it's not there, I might need to fetch items or just show 0 for now.
-                                  Let's assume it's there or I'll just show '-' if missing.
-                              */}
-                              {order.total_amount !== undefined ?
-                                new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(order.total_amount)
+                              {order.total_value !== undefined && order.total_value !== null ?
+                                new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(order.total_value)
                                 : '-'}
                             </TableCell>
                             <TableCell className="text-right">

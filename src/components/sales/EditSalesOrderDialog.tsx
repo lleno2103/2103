@@ -10,12 +10,10 @@ import { Loader2 } from 'lucide-react';
 import { useSalesOrders, type SalesOrder } from '@/hooks/use-sales-orders';
 import { useCustomers } from '@/hooks/use-customers';
 import { SalesOrderItemsTable } from './SalesOrderItemsTable';
-import { Separator } from '@/components/ui/separator';
 
 const orderSchema = z.object({
     customer_id: z.string().min(1, 'Cliente é obrigatório'),
-    issue_date: z.string().min(1, 'Data de emissão é obrigatória'),
-    delivery_date: z.string().optional(),
+    order_date: z.string().min(1, 'Data de emissão é obrigatória'),
     status: z.string(),
     notes: z.string().optional(),
 });
@@ -36,8 +34,7 @@ export const EditSalesOrderDialog = ({ order, open, onOpenChange }: EditSalesOrd
         resolver: zodResolver(orderSchema),
         defaultValues: {
             customer_id: order.customer_id || '',
-            issue_date: order.issue_date ? new Date(order.issue_date).toISOString().split('T')[0] : '',
-            delivery_date: order.delivery_date ? new Date(order.delivery_date).toISOString().split('T')[0] : '',
+            order_date: order.order_date ? new Date(order.order_date).toISOString().split('T')[0] : '',
             status: order.status || 'draft',
             notes: order.notes || '',
         }
@@ -52,7 +49,7 @@ export const EditSalesOrderDialog = ({ order, open, onOpenChange }: EditSalesOrd
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Editar Pedido #{order.number}</DialogTitle>
+                    <DialogTitle>Editar Pedido #{order.order_number}</DialogTitle>
                 </DialogHeader>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -100,16 +97,10 @@ export const EditSalesOrderDialog = ({ order, open, onOpenChange }: EditSalesOrd
                                 </Select>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-4">
-                                <div>
-                                    <Label htmlFor="edit-issue_date">Data Emissão *</Label>
-                                    <Input type="date" id="edit-issue_date" {...register('issue_date')} />
-                                    {errors.issue_date && <p className="text-sm text-destructive">{errors.issue_date.message}</p>}
-                                </div>
-                                <div>
-                                    <Label htmlFor="edit-delivery_date">Data Entrega</Label>
-                                    <Input type="date" id="edit-delivery_date" {...register('delivery_date')} />
-                                </div>
+                            <div>
+                                <Label htmlFor="edit-order_date">Data Emissão *</Label>
+                                <Input type="date" id="edit-order_date" {...register('order_date')} />
+                                {errors.order_date && <p className="text-sm text-destructive">{errors.order_date.message}</p>}
                             </div>
 
                             <div>
