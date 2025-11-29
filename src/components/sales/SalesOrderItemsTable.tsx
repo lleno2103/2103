@@ -40,14 +40,14 @@ export const SalesOrderItemsTable = ({ orderId }: SalesOrderItemsTableProps) => 
             item_id: newItem.item_id,
             quantity: newItem.quantity,
             unit_price: newItem.unit_price,
-            total_price: newItem.quantity * newItem.unit_price,
+            total_value: newItem.quantity * newItem.unit_price,
         });
 
         // Reset selection but keep quantity 1
         setNewItem(prev => ({ ...prev, item_id: '', quantity: 1, unit_price: 0 }));
     };
 
-    const totalAmount = orderItems?.reduce((sum, item) => sum + (item.total_price || 0), 0) || 0;
+    const totalAmount = orderItems?.reduce((sum, item) => sum + (item.total_value || 0), 0) || 0;
 
     return (
         <div className="space-y-4">
@@ -78,7 +78,7 @@ export const SalesOrderItemsTable = ({ orderId }: SalesOrderItemsTableProps) => 
                                         {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_price)}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total_price || 0)}
+                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.total_value || 0)}
                                     </TableCell>
                                     <TableCell>
                                         <Button
