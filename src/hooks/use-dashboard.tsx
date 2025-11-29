@@ -2,6 +2,24 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 
+interface SalesOrderItemRow {
+  total_value: number;
+  items?: { category_id: string } | null;
+}
+
+interface TransactionRow {
+  amount: number;
+}
+
+interface OrderRow {
+  id: string;
+  order_date: string;
+}
+
+interface CustomerRow {
+  id: string;
+}
+
 export type MonthlyRevenuePoint = { month: string; value: number };
 export type SalesByCategoryPoint = { category: string; value: number };
 export type CashflowProjectionPoint = { date: string; inflow: number; outflow: number; net: number; cumulative: number };
@@ -43,7 +61,7 @@ export const useDashboard = () => {
         .gte('created_at', new Date(new Date().setMonth(new Date().getMonth() - 2)).toISOString());
       if (error) throw error;
       const byCategory: Record<string, number> = {};
-      (data || []).forEach((row: any) => {
+      (data || []).forEach((row: SalesOrderItemRow) => {
         const cat = row.items?.category_id || 'Sem Categoria';
         byCategory[cat] = (byCategory[cat] || 0) + (row.total_value || 0);
       });
@@ -119,11 +137,11 @@ export const useDashboard = () => {
         .eq('type', 'income')
         .eq('status', 'completed')
         .gte('transaction_date', start30.toISOString().split('T')[0]);
-      const totalRevenue30d = (incomes || []).reduce((sum, t: any) => sum + (t.amount || 0), 0);
+      const totalRevenue30d = (incomes || []).reduce((sum: number, t: TransactionRow) => sum + (t.amount || 0), 0);
       const { data: orders } = await supabase
         .from('sales_orders')
         .select('id, order_date');
-      const ordersThisMonth = (orders || []).filter((o: any) => {
+      const ordersThisMonth = (orders || []).filter((o: OrderRow) => {
         if (!o.order_date) return false;
         const d = new Date(o.order_date);
         return d >= startMonth && d <= today;

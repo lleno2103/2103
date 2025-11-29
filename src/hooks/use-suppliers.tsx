@@ -2,6 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+interface DatabaseError {
+  message: string;
+  code?: string;
+  details?: unknown;
+  hint?: string;
+}
+
 export interface Supplier {
   id: string;
   code: string;
@@ -53,11 +60,11 @@ export const useSuppliers = () => {
         description: 'Fornecedor cadastrado com sucesso',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast({
         variant: 'destructive',
         title: 'Erro ao criar fornecedor',
-        description: error.message,
+        description: error.message || 'Ocorreu um erro ao criar o fornecedor.',
       });
     },
   });

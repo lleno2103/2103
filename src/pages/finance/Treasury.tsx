@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { NewTransactionDialog } from '@/components/finance/NewTransactionDialog';
 import { EditTransactionDialog } from '@/components/finance/EditTransactionDialog';
 import { DeleteConfirmDialog } from '@/components/finance/DeleteConfirmDialog';
+import BankReconciliation from '@/components/finance/BankReconciliation';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -473,6 +474,10 @@ const Treasury = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="reconciliation" className="space-y-4">
+            <BankReconciliation />
           </TabsContent>
         </Tabs>
 

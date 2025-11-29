@@ -5,13 +5,29 @@ import { useToast } from '@/hooks/use-toast';
 
 type UserRole = 'admin' | 'manager' | 'operator';
 
+interface AuthError {
+  message: string;
+  code?: string;
+  status?: number;
+}
+
+interface AuthResponse {
+  error: AuthError | null;
+}
+
+interface SupabaseError {
+  message: string;
+  status?: number;
+  code?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   userRole: UserRole | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
+  signUp: (email: string, password: string, fullName: string) => Promise<AuthResponse>;
   signOut: () => Promise<void>;
   hasRole: (role: UserRole) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
@@ -68,13 +84,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
       setUserRole(data.role as UserRole);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching user role:', error);
+      const supabaseError = error as SupabaseError;
+      console.error('Supabase error details:', supabaseError);
       setUserRole('operator'); // Default fallback
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -96,18 +114,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
 
-      return { error };
-    } catch (error: any) {
+      return { error: error as AuthError | null };
+    } catch (error: unknown) {
+      const authError = error as AuthError;
       toast({
         variant: "destructive",
         title: "Erro ao fazer login",
         description: "Ocorreu um erro inesperado. Tente novamente.",
       });
-      return { error };
+      return { error: authError };
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string): Promise<AuthResponse> => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
@@ -143,14 +162,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         });
       }
 
-      return { error };
-    } catch (error: any) {
+      return { error: error as AuthError | null };
+    } catch (error: unknown) {
+      const authError = error as AuthError;
       toast({
         variant: "destructive",
         title: "Erro ao criar conta",
         description: "Ocorreu um erro inesperado. Tente novamente.",
       });
-      return { error };
+      return { error: authError };
     }
   };
 
@@ -163,11 +183,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         title: "Logout realizado",
         description: "Até logo!",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const supabaseError = error as SupabaseError;
       toast({
         variant: "destructive",
         title: "Erro ao sair",
-        description: error.message,
+        description: supabaseError.message || 'Ocorreu um erro ao tentar sair.',
       });
     }
   };

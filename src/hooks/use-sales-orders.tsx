@@ -3,6 +3,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
+interface DatabaseError {
+    message: string;
+    code?: string;
+    details?: unknown;
+    hint?: string;
+}
+
+interface SalesOrderItem {
+    item_id: string;
+    quantity: number;
+    unit_price?: number;
+    discount?: number;
+}
+
+interface InventoryStock {
+    id: string;
+    quantity: number;
+}
+
+interface Warehouse {
+    id: string;
+    code: string;
+    active: boolean;
+}
+
 export type SalesOrder = Tables<'sales_orders'> & {
     customer?: Tables<'customers'> | null;
     items?: (Tables<'sales_order_items'> & {
@@ -10,7 +35,7 @@ export type SalesOrder = Tables<'sales_orders'> & {
     })[];
 };
 
-export type SalesOrderItem = Tables<'sales_order_items'>;
+export type SalesOrderItemTable = Tables<'sales_order_items'>;
 
 export const useSalesOrders = () => {
     const { toast } = useToast();
@@ -52,11 +77,11 @@ export const useSalesOrders = () => {
                 description: 'Pedido de venda iniciado com sucesso.',
             });
         },
-        onError: (error: any) => {
+        onError: (error: DatabaseError) => {
             toast({
                 variant: 'destructive',
                 title: 'Erro ao criar pedido',
-                description: error.message,
+                description: error.message || 'Ocorreu um erro ao criar o pedido.',
             });
         },
     });
@@ -116,7 +141,7 @@ export const useSalesOrders = () => {
                 const warehouseId = warehouseIdForDelivery || (warehousesData && warehousesData[0]?.id);
                 if (warehouseId && itemsData && itemsData.length > 0) {
                     await Promise.all(
-                        itemsData.map(async (it: any) => {
+                        itemsData.map(async (it: SalesOrderItem) => {
                             const { data: current } = await supabase
                                 .from('inventory_stock')
                                 .select('id, quantity')
@@ -159,7 +184,7 @@ export const useSalesOrders = () => {
             }
             toast({ title: 'Pedido atualizado!', description: 'Alterações salvas com sucesso.' });
         },
-        onError: (error: any) => {
+        onError: (error: DatabaseError) => {
             toast({ variant: 'destructive', title: 'Erro ao atualizar pedido', description: error.message });
         },
     });
@@ -181,11 +206,11 @@ export const useSalesOrders = () => {
                 description: 'Pedido removido com sucesso.',
             });
         },
-        onError: (error: any) => {
+        onError: (error: DatabaseError) => {
             toast({
                 variant: 'destructive',
                 title: 'Erro ao excluir pedido',
-                description: error.message,
+                description: error.message || 'Ocorreu um erro ao excluir o pedido.',
             });
         },
     });
@@ -242,10 +267,10 @@ export const useSalesOrderItems = (orderId?: string) => {
             if (orderId) {
                 const { data: itemsData, error: itemsError } = await supabase
                     .from('sales_order_items')
-                    .select('total_price')
+                    .select('unit_price, quantity')
                     .eq('sales_order_id', orderId);
                 if (!itemsError && itemsData) {
-                    const total = itemsData.reduce((sum, it: any) => sum + (it.total_price || 0), 0);
+                    const total = itemsData.reduce((sum: number, it: { unit_price?: number; quantity?: number }) => sum + ((it.unit_price || 0) * (it.quantity || 0)), 0);
                     await supabase
                         .from('sales_orders')
                         .update({ total_value: total })
@@ -258,11 +283,11 @@ export const useSalesOrderItems = (orderId?: string) => {
                 description: 'Produto adicionado ao pedido.',
             });
         },
-        onError: (error: any) => {
+        onError: (error: DatabaseError) => {
             toast({
                 variant: 'destructive',
                 title: 'Erro ao adicionar item',
-                description: error.message,
+                description: error.message || 'Ocorreu um erro ao adicionar o item ao pedido.',
             });
         },
     });
@@ -283,10 +308,10 @@ export const useSalesOrderItems = (orderId?: string) => {
             if (orderId) {
                 const { data: itemsData, error: itemsError } = await supabase
                     .from('sales_order_items')
-                    .select('total_price')
+                    .select('unit_price, quantity')
                     .eq('sales_order_id', orderId);
                 if (!itemsError && itemsData) {
-                    const total = itemsData.reduce((sum, it: any) => sum + (it.total_price || 0), 0);
+                    const total = itemsData.reduce((sum: number, it: { unit_price?: number; quantity?: number }) => sum + ((it.unit_price || 0) * (it.quantity || 0)), 0);
                     await supabase
                         .from('sales_orders')
                         .update({ total_value: total })

@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
+interface DatabaseError {
+  message: string;
+  code?: string;
+  details?: unknown;
+  hint?: string;
+}
+
 export type Warehouse = Tables<'warehouses'>;
 
 export const useWarehouses = () => {
@@ -37,8 +44,8 @@ export const useWarehouses = () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
       toast({ title: 'Armazém criado!', description: 'Armazém cadastrado com sucesso.' });
     },
-    onError: (error: any) => {
-      toast({ variant: 'destructive', title: 'Erro ao criar armazém', description: error.message });
+    onError: (error: DatabaseError) => {
+      toast({ variant: 'destructive', title: 'Erro ao criar armazém', description: error.message || 'Ocorreu um erro ao criar o armazém.' });
     },
   });
 
@@ -58,8 +65,8 @@ export const useWarehouses = () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
       toast({ title: 'Armazém atualizado!', description: 'Dados atualizados com sucesso.' });
     },
-    onError: (error: any) => {
-      toast({ variant: 'destructive', title: 'Erro ao atualizar armazém', description: error.message });
+    onError: (error: DatabaseError) => {
+      toast({ variant: 'destructive', title: 'Erro ao atualizar armazém', description: error.message || 'Ocorreu um erro ao atualizar o armazém.' });
     },
   });
 
@@ -75,8 +82,8 @@ export const useWarehouses = () => {
       queryClient.invalidateQueries({ queryKey: ['warehouses'] });
       toast({ title: 'Armazém excluído!', description: 'Armazém removido com sucesso.' });
     },
-    onError: (error: any) => {
-      toast({ variant: 'destructive', title: 'Erro ao excluir armazém', description: error.message });
+    onError: (error: DatabaseError) => {
+      toast({ variant: 'destructive', title: 'Erro ao excluir armazém', description: error.message || 'Ocorreu um erro ao excluir o armazém.' });
     },
   });
 

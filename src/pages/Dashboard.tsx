@@ -5,7 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BarChart3, LineChart, PieChart, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useDashboard } from '@/hooks/use-dashboard';
+interface OverdueReceivable {
+  id: string;
+  description: string;
+  amount: number;
+}
+
+interface LowBalanceAccount {
+  id: string;
+  name: string;
+  balance: number;
+}
+
+interface AlertData {
+  overdueReceivables?: OverdueReceivable[];
+  lowBalance?: LowBalanceAccount[];
+}
 import { ResponsiveContainer, LineChart as RLChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, BarChart as RBChart, Bar, Legend, AreaChart as RAChart, Area } from 'recharts';
 
 const Dashboard = () => {
@@ -108,7 +123,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {(alerts.data?.overdueReceivables || []).map((tax: any) => (
+                {(alerts.data?.overdueReceivables || []).map((tax: OverdueReceivable) => (
                   <div key={tax.id} className="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-md border border-amber-100 dark:border-amber-900/30 flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-amber-500 mr-3"></div>
@@ -122,7 +137,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                 ))}
-                {(alerts.data?.lowBalance || []).map((acc: any) => (
+                {(alerts.data?.lowBalance || []).map((acc: LowBalanceAccount) => (
                   <div key={acc.id} className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-100 dark:border-red-900/30 flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-red-500 mr-3"></div>

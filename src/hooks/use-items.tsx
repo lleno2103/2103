@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
+interface DatabaseError {
+  message: string;
+  code?: string;
+  details?: unknown;
+  hint?: string;
+}
+
 export type Item = Tables<'items'> & {
   category?: Tables<'product_categories'> | null;
 };
@@ -47,11 +54,11 @@ export const useItems = () => {
         description: 'Produto cadastrado com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast({
         variant: 'destructive',
         title: 'Erro ao criar produto',
-        description: error.message,
+        description: error.message || 'Ocorreu um erro ao criar o produto.',
       });
     },
   });
@@ -76,11 +83,11 @@ export const useItems = () => {
         description: 'Dados do produto atualizados com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast({
         variant: 'destructive',
         title: 'Erro ao atualizar produto',
-        description: error.message,
+        description: error.message || 'Ocorreu um erro ao atualizar o produto.',
       });
     },
   });
@@ -102,11 +109,11 @@ export const useItems = () => {
         description: 'Produto removido com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast({
         variant: 'destructive',
         title: 'Erro ao excluir produto',
-        description: error.message,
+        description: error.message || 'Ocorreu um erro ao excluir o produto.',
       });
     },
   });

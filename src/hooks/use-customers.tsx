@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
+interface DatabaseError {
+  message: string;
+  code?: string;
+  details?: unknown;
+  hint?: string;
+}
+
 export type Customer = Tables<'customers'>;
 
 export const useCustomers = () => {
@@ -54,11 +61,11 @@ export const useCustomers = () => {
         description: 'Cliente cadastrado com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast({
         variant: 'destructive',
         title: 'Erro ao criar cliente',
-        description: error.message,
+        description: error.message || 'Ocorreu um erro ao criar o cliente.',
       });
     },
   });
@@ -83,11 +90,11 @@ export const useCustomers = () => {
         description: 'Dados do cliente atualizados com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast({
         variant: 'destructive',
         title: 'Erro ao atualizar cliente',
-        description: error.message,
+        description: error.message || 'Ocorreu um erro ao atualizar o cliente.',
       });
     },
   });
@@ -109,11 +116,11 @@ export const useCustomers = () => {
         description: 'Cliente removido com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast({
         variant: 'destructive',
         title: 'Erro ao excluir cliente',
-        description: error.message,
+        description: error.message || 'Ocorreu um erro ao excluir o cliente.',
       });
     },
   });

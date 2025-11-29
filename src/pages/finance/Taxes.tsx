@@ -11,6 +11,7 @@ import { useFinancialTransactions } from '@/hooks/use-treasury';
 import { NewTaxRecordDialog } from '@/components/finance/NewTaxRecordDialog';
 import { EditTaxRecordDialog } from '@/components/finance/EditTaxRecordDialog';
 import { DeleteConfirmDialog } from '@/components/finance/DeleteConfirmDialog';
+import TaxCalculations from '@/components/finance/TaxCalculations';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -77,6 +78,7 @@ const Taxes = () => {
             <TabsTrigger value="calendar">Calendário Fiscal</TabsTrigger>
             <TabsTrigger value="management">Gerenciamento</TabsTrigger>
             <TabsTrigger value="planning">Planejamento</TabsTrigger>
+            <TabsTrigger value="calculations">Cálculos</TabsTrigger>
           </TabsList>
           
           <TabsContent value="calendar" className="space-y-4">
@@ -350,7 +352,11 @@ const Taxes = () => {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+        
+        <TabsContent value="calculations" className="space-y-4">
+          <TaxCalculations />
+        </TabsContent>
+      </Tabs>
 
         {editingRecord && (
           <EditTaxRecordDialog

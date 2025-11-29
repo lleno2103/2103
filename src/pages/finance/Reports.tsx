@@ -11,6 +11,7 @@ import {
 import { useAccountingEntries, useAccountingAccounts } from '@/hooks/use-accounting';
 import { useFinancialTransactions, useBankAccounts } from '@/hooks/use-treasury';
 import { useTaxRecords } from '@/hooks/use-taxes';
+import FinancialReports from '@/components/finance/FinancialReports';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -127,6 +128,7 @@ const FinanceReports = () => {
             <TabsTrigger value="performance">Desempenho</TabsTrigger>
             <TabsTrigger value="statements">Demonstrativos</TabsTrigger>
             <TabsTrigger value="kpis">KPIs</TabsTrigger>
+            <TabsTrigger value="financial">Financeiro</TabsTrigger>
           </TabsList>
           <Card>
             <CardHeader>
@@ -507,6 +509,10 @@ const FinanceReports = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="financial" className="space-y-4">
+            <FinancialReports />
           </TabsContent>
         </Tabs>
       </div>
