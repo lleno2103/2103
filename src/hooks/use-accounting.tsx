@@ -85,9 +85,58 @@ export const useAccountingEntries = () => {
     },
   });
 
+  const updateEntry = useMutation({
+    mutationFn: async ({ id, ...entry }: {
+      id: string;
+      entry_date: string;
+      account_id: string;
+      description: string;
+      document_number?: string;
+      debit: number;
+      credit: number;
+    }) => {
+      const { data, error } = await supabase
+        .from('accounting_entries')
+        .update(entry)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounting-entries'] });
+      toast.success('Lançamento atualizado com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar lançamento: ' + error.message);
+    },
+  });
+
+  const deleteEntry = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('accounting_entries')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounting-entries'] });
+      toast.success('Lançamento excluído com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao excluir lançamento: ' + error.message);
+    },
+  });
+
   return {
     entries,
     isLoading,
     createEntry,
+    updateEntry,
+    deleteEntry,
   };
 };

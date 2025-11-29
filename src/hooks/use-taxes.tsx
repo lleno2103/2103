@@ -60,9 +60,60 @@ export const useTaxRecords = () => {
     },
   });
 
+  const updateTaxRecord = useMutation({
+    mutationFn: async ({ id, ...record }: {
+      id: string;
+      record_number: string;
+      tax_type: string;
+      reference_period: string;
+      due_date: string;
+      amount: number;
+      status: string;
+      payment_date?: string;
+      notes?: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('tax_records')
+        .update(record)
+        .select()
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tax-records'] });
+      toast.success('Registro atualizado com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar registro: ' + error.message);
+    },
+  });
+
+  const deleteTaxRecord = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('tax_records')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tax-records'] });
+      toast.success('Registro excluído com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao excluir registro: ' + error.message);
+    },
+  });
+
   return {
     taxRecords,
     isLoading,
     createTaxRecord,
+    updateTaxRecord,
+    deleteTaxRecord,
   };
 };

@@ -93,9 +93,63 @@ export const useFinancialTransactions = () => {
     },
   });
 
+  const updateTransaction = useMutation({
+    mutationFn: async ({ id, ...transaction }: {
+      id: string;
+      transaction_number: string;
+      transaction_date: string;
+      bank_account_id: string;
+      type: string;
+      category: string;
+      amount: number;
+      description: string;
+      document_number?: string;
+      status: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('financial_transactions')
+        .update(transaction)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
+      toast.success('Transação atualizada com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar transação: ' + error.message);
+    },
+  });
+
+  const deleteTransaction = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('financial_transactions')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['financial-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
+      toast.success('Transação excluída com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao excluir transação: ' + error.message);
+    },
+  });
+
   return {
     transactions,
     isLoading,
     createTransaction,
+    updateTransaction,
+    deleteTransaction,
   };
 };
