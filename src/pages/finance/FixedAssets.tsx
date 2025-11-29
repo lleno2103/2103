@@ -261,7 +261,7 @@ const FixedAssets = () => {
                                 <Label>Status</Label>
                                 <Select
                                     value={formData.status}
-                                    onValueChange={(val: any) => setFormData({ ...formData, status: val })}
+                                    onValueChange={(val) => setFormData({ ...formData, status: val as 'active' | 'sold' | 'written_off' })}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />

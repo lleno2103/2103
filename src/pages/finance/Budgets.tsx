@@ -195,7 +195,7 @@ const Budgets = () => {
                                     <Label>Status</Label>
                                     <Select
                                         value={formData.status}
-                                        onValueChange={(val) => setFormData({ ...formData, status: val })}
+                                        onValueChange={(val) => setFormData({ ...formData, status: val as 'draft' | 'active' | 'closed' })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
