@@ -1,47 +1,51 @@
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
-import { 
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Filter, ImageIcon, Info, Loader2, Package, Plus, Search, FileText  
+import {
+  Filter, ImageIcon, Info, Loader2, Package, Search, FileText, Pencil, Trash2
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useItems } from '@/hooks/use-items';
+import { useItems, type Item } from '@/hooks/use-items';
+import { NewItemDialog } from '@/components/inventory/NewItemDialog';
+import { EditItemDialog } from '@/components/inventory/EditItemDialog';
 import { useState } from 'react';
 
 const Items = () => {
-  const { items, isLoading } = useItems();
+  const { items, isLoading, deleteItem } = useItems();
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   const filteredItems = items?.filter(item =>
     item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDelete = async (id: string) => {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+      await deleteItem.mutateAsync(id);
+    }
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader 
-          title="Itens de Estoque" 
+        <PageHeader
+          title="Itens de Estoque"
           description="Gerenciamento completo de produtos e serviços"
-          actions={
-            <Button>
-              <Plus size={16} className="mr-2" />
-              Novo Item
-            </Button>
-          }
+          actions={<NewItemDialog />}
         />
-        
+
         <Tabs defaultValue="list" className="space-y-4">
           <TabsList>
             <TabsTrigger value="list">Catálogo</TabsTrigger>
             <TabsTrigger value="technical">Fichas Técnicas</TabsTrigger>
             <TabsTrigger value="tracking">Rastreamento</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="list" className="space-y-4">
             <Card>
               <CardHeader>
@@ -72,18 +76,18 @@ const Items = () => {
                     </Button>
                   </div>
                 </div>
-                
+
                 <div className="border rounded-md">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead></TableHead>
+                        <TableHead className="w-[80px]"></TableHead>
                         <TableHead>Código</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Unidade</TableHead>
-                        <TableHead>Grupo</TableHead>
-                        <TableHead>Estoque</TableHead>
+                        <TableHead>Categoria</TableHead>
                         <TableHead className="text-right">Valor</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -94,38 +98,51 @@ const Items = () => {
                           </TableCell>
                         </TableRow>
                       ) : filteredItems && filteredItems.length > 0 ? (
-                        filteredItems.map((item) => {
-                          const totalStock = item.stock?.reduce((sum, s) => sum + s.quantity, 0) || 0;
-                          const stockStatus = totalStock <= 5 ? 'red' : totalStock <= 10 ? 'amber' : 'green';
-                          
-                          return (
-                            <TableRow key={item.id}>
-                              <TableCell>
-                                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                        filteredItems.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>
+                              <div className="w-10 h-10 rounded bg-muted flex items-center justify-center overflow-hidden">
+                                {item.image_url ? (
+                                  <img src={item.image_url} alt={item.description} className="w-full h-full object-cover" />
+                                ) : (
                                   <ImageIcon size={16} className="text-muted-foreground" />
-                                </div>
-                              </TableCell>
-                              <TableCell>{item.code}</TableCell>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{item.description}</p>
-                                  {item.details && <p className="text-xs text-muted-foreground">{item.details}</p>}
-                                </div>
-                              </TableCell>
-                              <TableCell>{item.unit}</TableCell>
-                              <TableCell>-</TableCell>
-                              <TableCell>
-                                <div className="flex items-center">
-                                  <span className={`w-2 h-2 rounded-full bg-${stockStatus}-500 mr-2`}></span>
-                                  <span>{totalStock}</span>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_value)}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>{item.code}</TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{item.description}</p>
+                                {item.details && <p className="text-xs text-muted-foreground truncate max-w-[200px]">{item.details}</p>}
+                              </div>
+                            </TableCell>
+                            <TableCell>{item.unit}</TableCell>
+                            <TableCell>
+                              {item.category?.name || '-'}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.unit_value || 0)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingItem(item)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDelete(item.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
                       ) : (
                         <TableRow>
                           <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
@@ -139,7 +156,7 @@ const Items = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="technical" className="space-y-4">
             <Card>
               <CardHeader>
@@ -149,22 +166,30 @@ const Items = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Conteúdo de fichas técnicas em construção...</p>
+                <p className="text-muted-foreground">Conteúdo de fichas técnicas em construção...</p>
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="tracking" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-medium">Rastreamento por Lote/Série</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Sistema de rastreamento em construção...</p>
+                <p className="text-muted-foreground">Sistema de rastreamento em construção...</p>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {editingItem && (
+          <EditItemDialog
+            item={editingItem}
+            open={!!editingItem}
+            onOpenChange={(open) => !open && setEditingItem(null)}
+          />
+        )}
       </div>
     </MainLayout>
   );

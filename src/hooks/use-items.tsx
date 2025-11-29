@@ -1,30 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-export interface Item {
-  id: string;
-  code: string;
-  description: string;
-  details: string | null;
-  unit: string;
-  category_id: string | null;
-  unit_value: number;
-  active: boolean;
-  image_url: string | null;
-}
-
-export interface ItemWithStock extends Item {
-  stock?: {
-    quantity: number;
-    warehouse_name: string;
-  }[];
-}
+export type Item = Tables<'items'> & {
+  category?: Tables<'product_categories'> | null;
+};
 
 export const useItems = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // List all items
   const { data: items, isLoading, error } = useQuery({
     queryKey: ['items'],
     queryFn: async () => {
@@ -32,49 +19,93 @@ export const useItems = () => {
         .from('items')
         .select(`
           *,
-          inventory_stock (
-            quantity,
-            warehouse_id,
-            warehouses (name)
-          )
+          category:product_categories(*)
         `)
-        .eq('active', true)
-        .order('code');
-      
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
-      
-      return data.map((item: any) => ({
-        ...item,
-        stock: item.inventory_stock?.map((s: any) => ({
-          quantity: s.quantity,
-          warehouse_name: s.warehouses?.name || 'N/A',
-        })) || [],
-      })) as ItemWithStock[];
+      return data as Item[];
     },
   });
 
+  // Create item
   const createItem = useMutation({
-    mutationFn: async (item: Omit<Item, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (item: TablesInsert<'items'>) => {
       const { data, error } = await supabase
         .from('items')
-        .insert([item])
+        .insert(item)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
       toast({
-        title: 'Item criado',
-        description: 'Item cadastrado com sucesso',
+        title: 'Produto criado!',
+        description: 'Produto cadastrado com sucesso.',
       });
     },
     onError: (error: any) => {
       toast({
         variant: 'destructive',
-        title: 'Erro ao criar item',
+        title: 'Erro ao criar produto',
+        description: error.message,
+      });
+    },
+  });
+
+  // Update item
+  const updateItem = useMutation({
+    mutationFn: async ({ id, ...updates }: TablesUpdate<'items'> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('items')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      toast({
+        title: 'Produto atualizado!',
+        description: 'Dados do produto atualizados com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar produto',
+        description: error.message,
+      });
+    },
+  });
+
+  // Delete item
+  const deleteItem = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('items')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items'] });
+      toast({
+        title: 'Produto excluído!',
+        description: 'Produto removido com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir produto',
         description: error.message,
       });
     },
@@ -84,6 +115,8 @@ export const useItems = () => {
     items,
     isLoading,
     error,
-    createItem: createItem.mutate,
+    createItem,
+    updateItem,
+    deleteItem,
   };
 };
