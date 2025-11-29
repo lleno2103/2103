@@ -1,20 +1,25 @@
-
+import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  ArrowDownUp, CreditCard, Wallet, Loader2, ArrowUpCircle, ArrowDownCircle
+  ArrowDownUp, CreditCard, Wallet, Loader2, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2
 } from 'lucide-react';
-import { useFinancialTransactions, useBankAccounts } from '@/hooks/use-treasury';
+import { useFinancialTransactions, useBankAccounts, FinancialTransaction } from '@/hooks/use-treasury';
 import { NewTransactionDialog } from '@/components/finance/NewTransactionDialog';
+import { EditTransactionDialog } from '@/components/finance/EditTransactionDialog';
+import { DeleteConfirmDialog } from '@/components/finance/DeleteConfirmDialog';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 const Treasury = () => {
-  const { transactions, isLoading } = useFinancialTransactions();
+  const { transactions, isLoading, updateTransaction, deleteTransaction } = useFinancialTransactions();
   const { data: accounts } = useBankAccounts();
+  const [editingTransaction, setEditingTransaction] = useState<FinancialTransaction | null>(null);
+  const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -112,6 +117,7 @@ const Treasury = () => {
                           <TableHead>Descrição</TableHead>
                           <TableHead className="text-right">Valor</TableHead>
                           <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -138,6 +144,24 @@ const Treasury = () => {
                               <Badge variant={transaction.status === 'completed' ? 'default' : transaction.status === 'pending' ? 'secondary' : 'destructive'}>
                                 {transaction.status === 'completed' ? 'Concluído' : transaction.status === 'pending' ? 'Pendente' : 'Cancelado'}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingTransaction(transaction)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeletingTransactionId(transaction.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -207,6 +231,28 @@ const Treasury = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {editingTransaction && (
+          <EditTransactionDialog
+            open={!!editingTransaction}
+            onOpenChange={(open) => !open && setEditingTransaction(null)}
+            transaction={editingTransaction}
+            onSubmit={(data) => updateTransaction.mutate(data)}
+          />
+        )}
+
+        <DeleteConfirmDialog
+          open={!!deletingTransactionId}
+          onOpenChange={(open) => !open && setDeletingTransactionId(null)}
+          onConfirm={() => {
+            if (deletingTransactionId) {
+              deleteTransaction.mutate(deletingTransactionId);
+              setDeletingTransactionId(null);
+            }
+          }}
+          title="Excluir Transação"
+          description="Tem certeza que deseja excluir esta transação financeira? Esta ação não pode ser desfeita."
+        />
       </div>
     </MainLayout>
   );

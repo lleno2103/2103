@@ -1,19 +1,24 @@
 
+import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  FileText, BarChart, Download, Loader2
+  FileText, BarChart, Download, Loader2, Pencil, Trash2
 } from 'lucide-react';
-import { useAccountingEntries } from '@/hooks/use-accounting';
+import { useAccountingEntries, AccountingEntry } from '@/hooks/use-accounting';
 import { NewAccountingEntryDialog } from '@/components/finance/NewAccountingEntryDialog';
+import { EditAccountingEntryDialog } from '@/components/finance/EditAccountingEntryDialog';
+import { DeleteConfirmDialog } from '@/components/finance/DeleteConfirmDialog';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 
 const Accounting = () => {
-  const { entries, isLoading } = useAccountingEntries();
+  const { entries, isLoading, updateEntry, deleteEntry } = useAccountingEntries();
+  const [editingEntry, setEditingEntry] = useState<AccountingEntry | null>(null);
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -62,6 +67,7 @@ const Accounting = () => {
                           <TableHead>Documento</TableHead>
                           <TableHead className="text-right">Débito</TableHead>
                           <TableHead className="text-right">Crédito</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -78,6 +84,24 @@ const Accounting = () => {
                             </TableCell>
                             <TableCell className="text-right font-medium">
                               {entry.credit > 0 ? formatCurrency(entry.credit) : '-'}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingEntry(entry)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeletingEntryId(entry.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -157,6 +181,28 @@ const Accounting = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {editingEntry && (
+          <EditAccountingEntryDialog
+            open={!!editingEntry}
+            onOpenChange={(open) => !open && setEditingEntry(null)}
+            entry={editingEntry}
+            onSubmit={(data) => updateEntry.mutate(data)}
+          />
+        )}
+
+        <DeleteConfirmDialog
+          open={!!deletingEntryId}
+          onOpenChange={(open) => !open && setDeletingEntryId(null)}
+          onConfirm={() => {
+            if (deletingEntryId) {
+              deleteEntry.mutate(deletingEntryId);
+              setDeletingEntryId(null);
+            }
+          }}
+          title="Excluir Lançamento"
+          description="Tem certeza que deseja excluir este lançamento contábil? Esta ação não pode ser desfeita."
+        />
       </div>
     </MainLayout>
   );

@@ -1,19 +1,24 @@
-
+import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  AlertCircle, Calendar, FileText, Loader2
+  AlertCircle, Calendar, FileText, Loader2, Pencil, Trash2
 } from 'lucide-react';
-import { useTaxRecords } from '@/hooks/use-taxes';
+import { useTaxRecords, TaxRecord } from '@/hooks/use-taxes';
 import { NewTaxRecordDialog } from '@/components/finance/NewTaxRecordDialog';
+import { EditTaxRecordDialog } from '@/components/finance/EditTaxRecordDialog';
+import { DeleteConfirmDialog } from '@/components/finance/DeleteConfirmDialog';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 const Taxes = () => {
-  const { taxRecords, isLoading } = useTaxRecords();
+  const { taxRecords, isLoading, updateTaxRecord, deleteTaxRecord } = useTaxRecords();
+  const [editingRecord, setEditingRecord] = useState<TaxRecord | null>(null);
+  const [deletingRecordId, setDeletingRecordId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -88,6 +93,7 @@ const Taxes = () => {
                           <TableHead>Vencimento</TableHead>
                           <TableHead className="text-right">Valor</TableHead>
                           <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -101,6 +107,24 @@ const Taxes = () => {
                               <Badge variant={tax.status === 'paid' ? 'default' : tax.status === 'pending' ? 'secondary' : 'destructive'}>
                                 {tax.status === 'paid' ? 'Pago' : tax.status === 'pending' ? 'Pendente' : 'Atrasado'}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingRecord(tax)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeletingRecordId(tax.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -176,6 +200,28 @@ const Taxes = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {editingRecord && (
+          <EditTaxRecordDialog
+            open={!!editingRecord}
+            onOpenChange={(open) => !open && setEditingRecord(null)}
+            record={editingRecord}
+            onSubmit={(data) => updateTaxRecord.mutate(data)}
+          />
+        )}
+
+        <DeleteConfirmDialog
+          open={!!deletingRecordId}
+          onOpenChange={(open) => !open && setDeletingRecordId(null)}
+          onConfirm={() => {
+            if (deletingRecordId) {
+              deleteTaxRecord.mutate(deletingRecordId);
+              setDeletingRecordId(null);
+            }
+          }}
+          title="Excluir Registro de Imposto"
+          description="Tem certeza que deseja excluir este registro de imposto? Esta ação não pode ser desfeita."
+        />
       </div>
     </MainLayout>
   );
