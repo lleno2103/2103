@@ -11,6 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Plus } from 'lucide-react';
 import { useItems } from '@/hooks/use-items';
 import { useCategories } from '@/hooks/use-categories';
+import { supabase } from '@/integrations/supabase/client';
+import type { TablesInsert } from '@/integrations/supabase/types';
 
 const itemSchema = z.object({
     code: z.string().min(1, 'Código é obrigatório'),
@@ -26,6 +28,7 @@ type ItemFormData = z.infer<typeof itemSchema>;
 
 export const NewItemDialog = () => {
     const [open, setOpen] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const { createItem } = useItems();
     const { categories } = useCategories();
 
@@ -38,9 +41,37 @@ export const NewItemDialog = () => {
     });
 
     const onSubmit = async (data: ItemFormData) => {
-        await createItem.mutateAsync(data);
+        const payload: TablesInsert<'items'> = {
+            code: data.code,
+            description: data.description,
+            unit: data.unit,
+            unit_value: data.unit_value ?? 0,
+            category_id: data.category_id || undefined,
+            details: data.details || undefined,
+            image_url: data.image_url || undefined,
+            active: true,
+        };
+        await createItem.mutateAsync(payload);
         reset();
         setOpen(false);
+    };
+
+    const handleFileUpload = async (file: File) => {
+        try {
+            setUploading(true);
+            const path = `${Date.now()}-${file.name}`;
+            const { error } = await supabase.storage.from('product-images').upload(path, file, {
+                cacheControl: '3600',
+                upsert: false,
+            });
+            if (error) throw error;
+            const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+            if (data?.publicUrl) setValue('image_url', data.publicUrl);
+        } catch (e) {
+            // ignore upload error, user can paste URL manually
+        } finally {
+            setUploading(false);
+        }
     };
 
     return (
@@ -108,11 +139,28 @@ export const NewItemDialog = () => {
                         <Textarea id="details" {...register('details')} />
                     </div>
 
-                    <div>
-                        <Label htmlFor="image_url">URL da Imagem</Label>
-                        <Input id="image_url" {...register('image_url')} placeholder="https://..." />
-                        {errors.image_url && <p className="text-sm text-destructive">{errors.image_url.message}</p>}
+                    <div className="grid grid-cols-2 gap-4 items-end">
+                        <div>
+                            <Label htmlFor="image_url">URL da Imagem</Label>
+                            <Input id="image_url" {...register('image_url')} placeholder="https://..." />
+                            {errors.image_url && <p className="text-sm text-destructive">{errors.image_url.message}</p>}
+                        </div>
+                        <div>
+                            <Label htmlFor="image_file">Upload</Label>
+                            <Input id="image_file" type="file" accept="image/*" onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file);
+                            }} />
+                            {uploading && (
+                                <p className="text-xs text-muted-foreground mt-1">Enviando imagem...</p>
+                            )}
+                        </div>
                     </div>
+                    {watch('image_url') && (
+                        <div className="pt-2">
+                            <img src={watch('image_url') || ''} alt="Preview" className="h-24 w-24 object-cover rounded-md border" />
+                        </div>
+                    )}
 
                     <div className="flex justify-end gap-2 pt-4">
                         <Button type="button" variant="outline" onClick={() => setOpen(false)}>

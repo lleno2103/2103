@@ -1,6 +1,8 @@
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/table";
@@ -10,6 +12,7 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useItems, type Item } from '@/hooks/use-items';
+import { useCategories, type Category } from '@/hooks/use-categories';
 import { NewItemDialog } from '@/components/inventory/NewItemDialog';
 import { NewCategoryDialog } from '@/components/inventory/NewCategoryDialog';
 import { EditItemDialog } from '@/components/inventory/EditItemDialog';
@@ -17,8 +20,10 @@ import { useState } from 'react';
 
 const Items = () => {
   const { items, isLoading, deleteItem } = useItems();
+  const { categories, isLoading: loadingCategories, updateCategory, deleteCategory } = useCategories();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const filteredItems = items?.filter(item =>
     item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -50,6 +55,7 @@ const Items = () => {
             <TabsTrigger value="list">Catálogo</TabsTrigger>
             <TabsTrigger value="technical">Fichas Técnicas</TabsTrigger>
             <TabsTrigger value="tracking">Rastreamento</TabsTrigger>
+            <TabsTrigger value="categories">Categorias</TabsTrigger>
           </TabsList>
 
           <TabsContent value="list" className="space-y-4">
@@ -187,6 +193,61 @@ const Items = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="categories" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-medium">Categorias de Produtos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-md">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Ativa</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {loadingCategories ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+                          </TableCell>
+                        </TableRow>
+                      ) : categories && categories.length > 0 ? (
+                        categories.map((cat) => (
+                          <TableRow key={cat.id}>
+                            <TableCell className="font-medium">{cat.name}</TableCell>
+                            <TableCell>{cat.description || '-'}</TableCell>
+                            <TableCell>{cat.active ? 'Sim' : 'Não'}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => setEditingCategory(cat)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => deleteCategory.mutate(cat.id)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                            Nenhuma categoria encontrada
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         {editingItem && (
@@ -196,9 +257,49 @@ const Items = () => {
             onOpenChange={(open) => !open && setEditingItem(null)}
           />
         )}
+
+        {editingCategory && (
+          <EditCategoryInline
+            category={editingCategory}
+            onClose={() => setEditingCategory(null)}
+            onSave={(data) => updateCategory.mutate({ id: editingCategory.id, ...data })}
+          />
+        )}
       </div>
     </MainLayout>
   );
 };
 
 export default Items;
+
+function EditCategoryInline({ category, onClose, onSave }: { category: Category; onClose: () => void; onSave: (data: { name?: string; description?: string; active?: boolean }) => void }) {
+  const [name, setName] = useState<string>(category.name);
+  const [description, setDescription] = useState<string>(category.description || '');
+  const [active, setActive] = useState<boolean>(!!category.active);
+
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+      <div className="bg-background rounded-md p-4 w-[420px] shadow-lg">
+        <h3 className="text-lg font-medium mb-3">Editar Categoria</h3>
+        <div className="space-y-3">
+          <div>
+            <Label>Nome</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div>
+            <Label>Descrição</Label>
+            <Input value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="cat-active" checked={active} onChange={(e) => setActive(e.target.checked)} />
+            <Label htmlFor="cat-active">Ativa</Label>
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={() => { onSave({ name, description: description || undefined, active }); onClose(); }}>Salvar</Button>
+        </div>
+      </div>
+    </div>
+  );
+}

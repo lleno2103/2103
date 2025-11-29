@@ -1,4 +1,5 @@
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { useItems, type Item } from '@/hooks/use-items';
 import { useCategories } from '@/hooks/use-categories';
+import { supabase } from '@/integrations/supabase/client';
 
 const itemSchema = z.object({
     code: z.string().min(1, 'Código é obrigatório'),
@@ -32,8 +34,9 @@ interface EditItemDialogProps {
 export const EditItemDialog = ({ item, open, onOpenChange }: EditItemDialogProps) => {
     const { updateItem } = useItems();
     const { categories } = useCategories();
+    const [uploading, setUploading] = useState(false);
 
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm<ItemFormData>({
+    const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ItemFormData>({
         resolver: zodResolver(itemSchema),
         defaultValues: {
             code: item.code,
@@ -49,6 +52,24 @@ export const EditItemDialog = ({ item, open, onOpenChange }: EditItemDialogProps
     const onSubmit = async (data: ItemFormData) => {
         await updateItem.mutateAsync({ id: item.id, ...data });
         onOpenChange(false);
+    };
+
+    const handleFileUpload = async (file: File) => {
+        try {
+            setUploading(true);
+            const path = `${Date.now()}-${file.name}`;
+            const { error } = await supabase.storage.from('product-images').upload(path, file, {
+                cacheControl: '3600',
+                upsert: false,
+            });
+            if (error) throw error;
+            const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+            if (data?.publicUrl) setValue('image_url', data.publicUrl);
+        } catch (e) {
+            // ignore upload error
+        } finally {
+            setUploading(false);
+        }
     };
 
     return (
@@ -113,11 +134,28 @@ export const EditItemDialog = ({ item, open, onOpenChange }: EditItemDialogProps
                         <Textarea id="edit-details" {...register('details')} />
                     </div>
 
-                    <div>
-                        <Label htmlFor="edit-image_url">URL da Imagem</Label>
-                        <Input id="edit-image_url" {...register('image_url')} />
-                        {errors.image_url && <p className="text-sm text-destructive">{errors.image_url.message}</p>}
+                    <div className="grid grid-cols-2 gap-4 items-end">
+                        <div>
+                            <Label htmlFor="edit-image_url">URL da Imagem</Label>
+                            <Input id="edit-image_url" {...register('image_url')} />
+                            {errors.image_url && <p className="text-sm text-destructive">{errors.image_url.message}</p>}
+                        </div>
+                        <div>
+                            <Label htmlFor="edit-image_file">Upload</Label>
+                            <Input id="edit-image_file" type="file" accept="image/*" onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file);
+                            }} />
+                            {uploading && (
+                                <p className="text-xs text-muted-foreground mt-1">Enviando imagem...</p>
+                            )}
+                        </div>
                     </div>
+                    {watch('image_url') && (
+                        <div className="pt-2">
+                            <img src={watch('image_url') || ''} alt="Preview" className="h-24 w-24 object-cover rounded-md border" />
+                        </div>
+                    )}
 
                     <div className="flex justify-end gap-2 pt-4">
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

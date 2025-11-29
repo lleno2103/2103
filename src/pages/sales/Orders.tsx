@@ -241,8 +241,8 @@ const Orders = () => {
                                   <Button variant="ghost" size="icon" onClick={() => setEditingOrder(order)}>
                                     <Pencil className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => updateOrder.mutate({ id: order.id, status: 'approved' })}>
-                                    <FileText className="h-4 w-4" />
+                                  <Button variant="outline" size="sm" onClick={() => updateOrder.mutate({ id: order.id, status: 'approved' })}>
+                                    Converter para Pedido
                                   </Button>
                                   <Button variant="outline" size="sm" onClick={() => navigate('/finance/treasury?tab=receivables')}>
                                     Receber
@@ -331,6 +331,13 @@ const Orders = () => {
                                       onClick={() => updateOrder.mutate({ id: order.id, status: 'delivered', warehouseIdForDelivery: deliveryWarehouse[order.id] })}
                                     >
                                       <FileText className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => navigate('/finance/treasury?tab=receivables')}
+                                    >
+                                      Emitir Fatura
                                     </Button>
                                   </div>
                                 </div>

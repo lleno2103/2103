@@ -42,12 +42,52 @@ export const useCategories = () => {
                 description: 'Categoria cadastrada com sucesso.',
             });
         },
-        onError: (error: any) => {
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
             toast({
                 variant: 'destructive',
                 title: 'Erro ao criar categoria',
-                description: error.message,
+                description: message,
             });
+        },
+    });
+
+    const updateCategory = useMutation({
+        mutationFn: async ({ id, ...updates }: TablesUpdate<'product_categories'> & { id: string }) => {
+            const { data, error } = await supabase
+                .from('product_categories')
+                .update(updates)
+                .eq('id', id)
+                .select()
+                .single();
+            if (error) throw error;
+            return data as Category;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            toast({ title: 'Categoria atualizada!', description: 'Dados atualizados com sucesso.' });
+        },
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            toast({ variant: 'destructive', title: 'Erro ao atualizar categoria', description: message });
+        },
+    });
+
+    const deleteCategory = useMutation({
+        mutationFn: async (id: string) => {
+            const { error } = await supabase
+                .from('product_categories')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories'] });
+            toast({ title: 'Categoria excluída!', description: 'Categoria removida com sucesso.' });
+        },
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            toast({ variant: 'destructive', title: 'Erro ao excluir categoria', description: message });
         },
     });
 
@@ -56,5 +96,7 @@ export const useCategories = () => {
         isLoading,
         error,
         createCategory,
+        updateCategory,
+        deleteCategory,
     };
 };

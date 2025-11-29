@@ -101,6 +101,7 @@ const Treasury = () => {
             <TabsTrigger value="accounts">Contas</TabsTrigger>
             <TabsTrigger value="payments">Pagamentos</TabsTrigger>
             <TabsTrigger value="receivables">Recebimentos</TabsTrigger>
+            <TabsTrigger value="reconciliation">Conciliação</TabsTrigger>
           </TabsList>
           
           <TabsContent value="cashflow" className="space-y-4">
@@ -399,6 +400,75 @@ const Treasury = () => {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     Nenhuma conta a receber
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="reconciliation" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-medium">Conciliação Bancária</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : transactions && transactions.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Conta</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead>Tipo</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions
+                          .filter(t => t.status === 'completed')
+                          .map((t) => (
+                            <TableRow key={t.id}>
+                              <TableCell>{format(new Date(t.transaction_date), 'dd/MM/yyyy')}</TableCell>
+                              <TableCell>{t.bank_account?.name || '-'}</TableCell>
+                              <TableCell className="max-w-xs truncate">{t.description}</TableCell>
+                              <TableCell>{t.type === 'income' ? 'Receita' : 'Despesa'}</TableCell>
+                              <TableCell className="text-right">
+                                {formatCurrency(t.amount)}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateTransaction.mutate({
+                                    id: t.id,
+                                    transaction_number: t.transaction_number,
+                                    transaction_date: t.transaction_date,
+                                    bank_account_id: t.bank_account_id,
+                                    type: t.type,
+                                    category: t.category,
+                                    amount: t.amount,
+                                    description: t.description,
+                                    document_number: t.document_number || undefined,
+                                    status: 'reconciled',
+                                  })}
+                                >
+                                  Conciliar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhuma transação para conciliação
                   </div>
                 )}
               </CardContent>
