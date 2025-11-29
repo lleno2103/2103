@@ -27,7 +27,8 @@ const signupSchema = z.object({
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [activeTab, setActiveTab] = useState('login');
+
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -48,13 +49,13 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginErrors({});
-    
+
     try {
       const validated = loginSchema.parse({ email: loginEmail, password: loginPassword });
       setIsLoading(true);
-      
+
       const { error } = await signIn(validated.email, validated.password);
-      
+
       if (!error) {
         // Redirect will happen automatically via AuthProvider
       }
@@ -76,7 +77,7 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupErrors({});
-    
+
     try {
       const validated = signupSchema.parse({
         fullName: signupFullName,
@@ -84,11 +85,11 @@ const Auth = () => {
         password: signupPassword,
         confirmPassword: signupConfirmPassword,
       });
-      
+
       setIsLoading(true);
-      
+
       const { error } = await signUp(validated.email, validated.password, validated.fullName);
-      
+
       if (!error) {
         // Clear form on success
         setSignupFullName('');
@@ -134,12 +135,12 @@ const Auth = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
               <TabsTrigger value="signup">Cadastro</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -157,7 +158,7 @@ const Auth = () => {
                     <p className="text-sm text-destructive">{loginErrors.email}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="login-password">Senha</Label>
                   <Input
@@ -186,7 +187,7 @@ const Auth = () => {
                 </Button>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
@@ -204,7 +205,7 @@ const Auth = () => {
                     <p className="text-sm text-destructive">{signupErrors.fullName}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
@@ -220,7 +221,7 @@ const Auth = () => {
                     <p className="text-sm text-destructive">{signupErrors.email}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Senha</Label>
                   <Input
@@ -236,7 +237,7 @@ const Auth = () => {
                     <p className="text-sm text-destructive">{signupErrors.password}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-confirm">Confirmar Senha</Label>
                   <Input
