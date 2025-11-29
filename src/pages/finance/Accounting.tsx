@@ -4,13 +4,14 @@ import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   FileText, BarChart, Download, Loader2, Pencil, Trash2
 } from 'lucide-react';
 import { useAccountingEntries, AccountingEntry } from '@/hooks/use-accounting';
 import { NewAccountingEntryDialog } from '@/components/finance/NewAccountingEntryDialog';
 import { EditAccountingEntryDialog } from '@/components/finance/EditAccountingEntryDialog';
 import { DeleteConfirmDialog } from '@/components/finance/DeleteConfirmDialog';
+import ChartOfAccounts from '@/components/finance/ChartOfAccounts';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -30,19 +31,24 @@ const Accounting = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader 
-          title="Contabilidade" 
+        <PageHeader
+          title="Contabilidade"
           description="Gestão contábil e financeira"
           actions={<NewAccountingEntryDialog />}
         />
-        
+
         <Tabs defaultValue="ledger" className="space-y-4">
           <TabsList>
             <TabsTrigger value="ledger">Livro Razão</TabsTrigger>
             <TabsTrigger value="journal">Diário</TabsTrigger>
+            <TabsTrigger value="chart">Plano de Contas</TabsTrigger>
             <TabsTrigger value="reports">Relatórios</TabsTrigger>
           </TabsList>
-          
+
+          <TabsContent value="chart" className="space-y-4">
+            <ChartOfAccounts />
+          </TabsContent>
+
           <TabsContent value="ledger" className="space-y-4">
             <Card>
               <CardHeader>
@@ -116,7 +122,7 @@ const Accounting = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="journal" className="space-y-4">
             <Card>
               <CardHeader>
@@ -133,7 +139,7 @@ const Accounting = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="reports" className="space-y-4">
             <Card>
               <CardHeader>
@@ -154,7 +160,7 @@ const Accounting = () => {
                       Exportar
                     </Button>
                   </div>
-                  
+
                   <div className="bg-erp-gray-50 p-4 rounded-md flex items-center justify-between">
                     <div>
                       <p className="font-medium">DRE</p>
@@ -165,7 +171,7 @@ const Accounting = () => {
                       Exportar
                     </Button>
                   </div>
-                  
+
                   <div className="bg-erp-gray-50 p-4 rounded-md flex items-center justify-between">
                     <div>
                       <p className="font-medium">Balanço Patrimonial</p>

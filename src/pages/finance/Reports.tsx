@@ -5,7 +5,7 @@ import PageHeader from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
+import {
   TrendingUp, Download, DollarSign, FileText, Loader2
 } from 'lucide-react';
 import { useAccountingEntries, useAccountingAccounts } from '@/hooks/use-accounting';
@@ -20,7 +20,7 @@ const FinanceReports = () => {
   const { transactions, isLoading: loadingTransactions } = useFinancialTransactions();
   const { data: accounts } = useBankAccounts();
   const { taxRecords, isLoading: loadingTaxes } = useTaxRecords();
-  const { data: accountingAccounts } = useAccountingAccounts();
+  const { accounts: accountingAccounts } = useAccountingAccounts();
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [type, setType] = useState<string>('all');
@@ -82,8 +82,8 @@ const FinanceReports = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <PageHeader 
-          title="Relatórios Financeiros" 
+        <PageHeader
+          title="Relatórios Financeiros"
           description="Análises e relatórios financeiros"
           actions={
             <Button variant="outline" onClick={() => {
@@ -122,12 +122,13 @@ const FinanceReports = () => {
             </Button>
           }
         />
-        
+
         <Tabs defaultValue="performance" className="space-y-4">
           <TabsList>
             <TabsTrigger value="performance">Desempenho</TabsTrigger>
             <TabsTrigger value="statements">Demonstrativos</TabsTrigger>
             <TabsTrigger value="kpis">KPIs</TabsTrigger>
+            <TabsTrigger value="aging">Aging List</TabsTrigger>
             <TabsTrigger value="financial">Financeiro</TabsTrigger>
           </TabsList>
           <Card>
@@ -230,7 +231,7 @@ const FinanceReports = () => {
               </div>
             </CardContent>
           </Card>
-          
+
           <TabsContent value="performance" className="space-y-4">
             {isLoading ? (
               <div className="flex justify-center py-8">
@@ -248,7 +249,7 @@ const FinanceReports = () => {
                       <p className="text-xs text-muted-foreground mt-1">Contas bancárias</p>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Receitas</CardTitle>
@@ -258,7 +259,7 @@ const FinanceReports = () => {
                       <p className="text-xs text-muted-foreground mt-1">Total recebido</p>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Despesas</CardTitle>
@@ -268,7 +269,7 @@ const FinanceReports = () => {
                       <p className="text-xs text-muted-foreground mt-1">Total pago</p>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm font-medium">Resultado</CardTitle>
@@ -295,7 +296,7 @@ const FinanceReports = () => {
                         </div>
                         <p className="text-2xl font-bold">{filteredTransactions.length || 0}</p>
                       </div>
-                      
+
                       <div className="flex justify-between items-center p-4 bg-muted rounded-md">
                         <div>
                           <p className="font-medium">Lançamentos Contábeis</p>
@@ -303,7 +304,7 @@ const FinanceReports = () => {
                         </div>
                         <p className="text-2xl font-bold">{filteredEntries.length || 0}</p>
                       </div>
-                      
+
                       <div className="flex justify-between items-center p-4 bg-muted rounded-md">
                         <div>
                           <p className="font-medium">Impostos Pendentes</p>
@@ -317,7 +318,7 @@ const FinanceReports = () => {
               </>
             )}
           </TabsContent>
-          
+
           <TabsContent value="statements" className="space-y-4">
             <Card>
               <CardHeader>
@@ -362,7 +363,7 @@ const FinanceReports = () => {
                       Exportar
                     </Button>
                   </div>
-                  
+
                   <div className="bg-muted p-4 rounded-md flex items-center justify-between">
                     <div>
                       <p className="font-medium">DRE - Demonstração do Resultado</p>
@@ -402,7 +403,7 @@ const FinanceReports = () => {
                       Exportar
                     </Button>
                   </div>
-                  
+
                   <div className="bg-muted p-4 rounded-md flex items-center justify-between">
                     <div>
                       <p className="font-medium">Fluxo de Caixa</p>
@@ -419,7 +420,7 @@ const FinanceReports = () => {
                         if (t.type === 'income') cur.entradas += t.amount || 0; else cur.saidas += t.amount || 0;
                         byDate.set(key, cur);
                       });
-                      const dates = Array.from(byDate.keys()).sort((a,b) => new Date(a).getTime() - new Date(b).getTime());
+                      const dates = Array.from(byDate.keys()).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
                       const headers: Array<keyof Row> = ['Data', 'Entradas', 'Saidas', 'SaldoDiario', 'SaldoAcumulado'];
                       let acumulado = 0;
                       const rows: Row[] = dates.map(d => {
@@ -445,7 +446,7 @@ const FinanceReports = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="kpis" className="space-y-4">
             <Card>
               <CardHeader>
@@ -468,7 +469,7 @@ const FinanceReports = () => {
                       </div>
                       <p className="text-xs text-muted-foreground">Recursos disponíveis</p>
                     </div>
-                    
+
                     <div className="p-4 border rounded-md">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -481,7 +482,7 @@ const FinanceReports = () => {
                       </div>
                       <p className="text-xs text-muted-foreground">Eficiência operacional</p>
                     </div>
-                    
+
                     <div className="p-4 border rounded-md">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -494,7 +495,7 @@ const FinanceReports = () => {
                       </div>
                       <p className="text-xs text-muted-foreground">Impostos sobre receita</p>
                     </div>
-                    
+
                     <div className="p-4 border rounded-md">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -510,9 +511,87 @@ const FinanceReports = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="financial" className="space-y-4">
             <FinancialReports />
+          </TabsContent>
+
+          <TabsContent value="aging" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-medium">Aging List (Contas a Pagar/Receber)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {['income', 'expense'].map((type) => {
+                    const pending = (transactions || []).filter(t =>
+                      t.type === type &&
+                      t.status === 'pending' &&
+                      (accountId === 'all' || t.bank_account_id === accountId)
+                    );
+
+                    const buckets = {
+                      current: 0,
+                      days30: 0,
+                      days60: 0,
+                      days90: 0,
+                      over90: 0
+                    };
+
+                    const today = new Date();
+
+                    pending.forEach(t => {
+                      const dueDate = new Date(t.due_date || t.transaction_date);
+                      const diffTime = Math.abs(today.getTime() - dueDate.getTime());
+                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      const isOverdue = dueDate < today;
+
+                      if (!isOverdue) {
+                        buckets.current += t.amount;
+                      } else if (diffDays <= 30) {
+                        buckets.days30 += t.amount;
+                      } else if (diffDays <= 60) {
+                        buckets.days60 += t.amount;
+                      } else if (diffDays <= 90) {
+                        buckets.days90 += t.amount;
+                      } else {
+                        buckets.over90 += t.amount;
+                      }
+                    });
+
+                    return (
+                      <div key={type} className="border rounded-md p-4">
+                        <h3 className={`font-bold mb-4 ${type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                          {type === 'income' ? 'Contas a Receber' : 'Contas a Pagar'}
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                          <div className="bg-muted/50 p-3 rounded text-center">
+                            <p className="text-xs text-muted-foreground mb-1">A Vencer</p>
+                            <p className="font-bold">{formatCurrency(buckets.current)}</p>
+                          </div>
+                          <div className="bg-yellow-50 p-3 rounded text-center">
+                            <p className="text-xs text-yellow-700 mb-1">1-30 dias</p>
+                            <p className="font-bold text-yellow-700">{formatCurrency(buckets.days30)}</p>
+                          </div>
+                          <div className="bg-orange-50 p-3 rounded text-center">
+                            <p className="text-xs text-orange-700 mb-1">31-60 dias</p>
+                            <p className="font-bold text-orange-700">{formatCurrency(buckets.days60)}</p>
+                          </div>
+                          <div className="bg-red-50 p-3 rounded text-center">
+                            <p className="text-xs text-red-700 mb-1">61-90 dias</p>
+                            <p className="font-bold text-red-700">{formatCurrency(buckets.days90)}</p>
+                          </div>
+                          <div className="bg-red-100 p-3 rounded text-center">
+                            <p className="text-xs text-red-900 mb-1">&gt; 90 dias</p>
+                            <p className="font-bold text-red-900">{formatCurrency(buckets.over90)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

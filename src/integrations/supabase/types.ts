@@ -1078,6 +1078,163 @@ export type Database = {
         }
         Relationships: []
       }
+      budgets: {
+        Row: {
+          id: string
+          name: string
+          period: string
+          status: string
+          total_amount: number
+          created_at: string | null
+          updated_at: string | null
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          period: string
+          status?: string
+          total_amount?: number
+          created_at?: string | null
+          updated_at?: string | null
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          period?: string
+          status?: string
+          total_amount?: number
+          created_at?: string | null
+          updated_at?: string | null
+          created_by?: string | null
+        }
+        Relationships: []
+      }
+      budget_items: {
+        Row: {
+          id: string
+          budget_id: string
+          category: string
+          planned_amount: number
+          actual_amount: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          budget_id: string
+          category: string
+          planned_amount: number
+          actual_amount?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          budget_id?: string
+          category?: string
+          planned_amount?: number
+          actual_amount?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_items_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "budgets"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      fixed_assets: {
+        Row: {
+          id: string
+          name: string
+          code: string
+          description: string | null
+          acquisition_date: string
+          acquisition_value: number
+          current_value: number
+          residual_value: number
+          useful_life_years: number
+          depreciation_rate_annual: number
+          status: string
+          location: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          code: string
+          description?: string | null
+          acquisition_date: string
+          acquisition_value: number
+          current_value?: number
+          residual_value?: number
+          useful_life_years: number
+          depreciation_rate_annual: number
+          status?: string
+          location?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          code?: string
+          description?: string | null
+          acquisition_date?: string
+          acquisition_value?: number
+          current_value?: number
+          residual_value?: number
+          useful_life_years?: number
+          depreciation_rate_annual?: number
+          status?: string
+          location?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      asset_depreciation: {
+        Row: {
+          id: string
+          asset_id: string
+          depreciation_date: string
+          amount: number
+          book_value_after: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          asset_id: string
+          depreciation_date: string
+          amount: number
+          book_value_after: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          asset_id?: string
+          depreciation_date?: string
+          amount?: number
+          book_value_after?: number
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_depreciation_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "fixed_assets"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

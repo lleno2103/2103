@@ -16,6 +16,8 @@ import Accounting from "./pages/finance/Accounting";
 import Treasury from "./pages/finance/Treasury";
 import Taxes from "./pages/finance/Taxes";
 import FinanceReports from "./pages/finance/Reports";
+import Budgets from "./pages/finance/Budgets";
+import FixedAssets from "./pages/finance/FixedAssets";
 
 // Sales routes
 import Orders from "./pages/sales/Orders";
@@ -70,6 +72,8 @@ const App = () => (
               <Route path="/finance/treasury" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Treasury /></ProtectedRoute>} />
               <Route path="/finance/taxes" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Taxes /></ProtectedRoute>} />
               <Route path="/finance/reports" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><FinanceReports /></ProtectedRoute>} />
+              <Route path="/finance/budgets" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><Budgets /></ProtectedRoute>} />
+              <Route path="/finance/assets" element={<ProtectedRoute requiredRoles={['admin', 'manager']}><FixedAssets /></ProtectedRoute>} />
 
               {/* Sales routes */}
               <Route path="/sales/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />

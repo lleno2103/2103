@@ -24,19 +24,87 @@ export interface AccountingEntry {
 }
 
 export const useAccountingAccounts = () => {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const { data: accounts, isLoading } = useQuery({
     queryKey: ['accounting-accounts'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('accounting_accounts')
         .select('*')
-        .eq('active', true)
         .order('code');
-      
+
       if (error) throw error;
       return data as AccountingAccount[];
     },
   });
+
+  const createAccount = useMutation({
+    mutationFn: async (account: Omit<AccountingAccount, 'id'>) => {
+      const { data, error } = await supabase
+        .from('accounting_accounts')
+        .insert(account)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounting-accounts'] });
+      toast.success('Conta criada com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao criar conta: ' + error.message);
+    },
+  });
+
+  const updateAccount = useMutation({
+    mutationFn: async ({ id, ...account }: Partial<AccountingAccount> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('accounting_accounts')
+        .update(account)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounting-accounts'] });
+      toast.success('Conta atualizada com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar conta: ' + error.message);
+    },
+  });
+
+  const deleteAccount = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('accounting_accounts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['accounting-accounts'] });
+      toast.success('Conta excluída com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao excluir conta: ' + error.message);
+    },
+  });
+
+  return {
+    accounts,
+    isLoading,
+    createAccount,
+    updateAccount,
+    deleteAccount,
+  };
 };
 
 export const useAccountingEntries = () => {
@@ -52,7 +120,7 @@ export const useAccountingEntries = () => {
           account:accounting_accounts(*)
         `)
         .order('entry_date', { ascending: false });
-      
+
       if (error) throw error;
       return data as AccountingEntry[];
     },
@@ -72,7 +140,7 @@ export const useAccountingEntries = () => {
         .insert(entry)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -101,7 +169,7 @@ export const useAccountingEntries = () => {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -120,7 +188,7 @@ export const useAccountingEntries = () => {
         .from('accounting_entries')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {

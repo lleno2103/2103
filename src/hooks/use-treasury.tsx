@@ -24,6 +24,7 @@ export interface FinancialTransaction {
   document_number: string | null;
   status: string;
   created_at: string;
+  due_date?: string;
   bank_account?: BankAccount;
 }
 
@@ -36,7 +37,7 @@ export const useBankAccounts = () => {
         .select('*')
         .eq('active', true)
         .order('code');
-      
+
       if (error) throw error;
       return data as BankAccount[];
     },
@@ -56,7 +57,7 @@ export const useFinancialTransactions = () => {
           bank_account:bank_accounts(*)
         `)
         .order('transaction_date', { ascending: false });
-      
+
       if (error) throw error;
       return data as FinancialTransaction[];
     },
@@ -79,7 +80,7 @@ export const useFinancialTransactions = () => {
         .insert(transaction)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -112,7 +113,7 @@ export const useFinancialTransactions = () => {
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
@@ -132,7 +133,7 @@ export const useFinancialTransactions = () => {
         .from('financial_transactions')
         .delete()
         .eq('id', id);
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
