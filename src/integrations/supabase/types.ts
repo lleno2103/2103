@@ -384,6 +384,57 @@ export type Database = {
           },
         ]
       }
+      inventory_movements: {
+        Row: {
+          id: string
+          item_id: string
+          warehouse_id: string
+          quantity_before: number | null
+          quantity_after: number | null
+          delta: number | null
+          reason: string | null
+          reference: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          item_id: string
+          warehouse_id: string
+          quantity_before?: number | null
+          quantity_after?: number | null
+          delta?: number | null
+          reason?: string | null
+          reference?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          item_id?: string
+          warehouse_id?: string
+          quantity_before?: number | null
+          quantity_after?: number | null
+          delta?: number | null
+          reason?: string | null
+          reference?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       items: {
         Row: {
           active: boolean | null

@@ -145,11 +145,37 @@ export const useFinancialTransactions = () => {
     },
   });
 
+  const adjustBankBalance = useMutation({
+    mutationFn: async ({ bankAccountId, amountDelta }: { bankAccountId: string; amountDelta: number }) => {
+      const { data: current, error: selErr } = await supabase
+        .from('bank_accounts')
+        .select('balance')
+        .eq('id', bankAccountId)
+        .single();
+      if (selErr) throw selErr;
+      const newBalance = (current?.balance ?? 0) + amountDelta;
+      const { error: updErr } = await supabase
+        .from('bank_accounts')
+        .update({ balance: newBalance, updated_at: new Date().toISOString() })
+        .eq('id', bankAccountId);
+      if (updErr) throw updErr;
+      return newBalance;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bank-accounts'] });
+      toast.success('Saldo atualizado com sucesso');
+    },
+    onError: (error) => {
+      toast.error('Erro ao atualizar saldo: ' + error.message);
+    },
+  });
+
   return {
     transactions,
     isLoading,
     createTransaction,
     updateTransaction,
     deleteTransaction,
+    adjustBankBalance,
   };
 };

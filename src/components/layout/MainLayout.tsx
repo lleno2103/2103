@@ -2,6 +2,7 @@
 import { ReactNode, useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -20,7 +21,9 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <div className="flex-1 flex flex-col overflow-hidden transition-all duration-300">
         <Header onToggleSidebar={toggleSidebar} />
         <main className="flex-1 overflow-y-auto p-6 bg-background text-foreground">
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
     </div>

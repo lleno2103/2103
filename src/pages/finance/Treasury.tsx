@@ -1,12 +1,13 @@
-import { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import PageHeader from '@/components/common/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  ArrowDownUp, CreditCard, Wallet, Loader2, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2
+  ArrowDownUp, CreditCard, Wallet, Loader2, ArrowUpCircle, ArrowDownCircle, Pencil, Trash2, CheckCircle
 } from 'lucide-react';
 import { useFinancialTransactions, useBankAccounts, FinancialTransaction } from '@/hooks/use-treasury';
+import { useEffect, useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { NewTransactionDialog } from '@/components/finance/NewTransactionDialog';
 import { EditTransactionDialog } from '@/components/finance/EditTransactionDialog';
 import { DeleteConfirmDialog } from '@/components/finance/DeleteConfirmDialog';
@@ -16,10 +17,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 const Treasury = () => {
-  const { transactions, isLoading, updateTransaction, deleteTransaction } = useFinancialTransactions();
+  const { transactions, isLoading, updateTransaction, deleteTransaction, adjustBankBalance } = useFinancialTransactions();
   const { data: accounts } = useBankAccounts();
   const [editingTransaction, setEditingTransaction] = useState<FinancialTransaction | null>(null);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
+  const [tab, setTab] = useState<string>('cashflow');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('tab');
+    if (t) setTab(t);
+  }, []);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -87,7 +95,7 @@ const Treasury = () => {
           </Card>
         </div>
         
-        <Tabs defaultValue="cashflow" className="space-y-4">
+        <Tabs value={tab} onValueChange={setTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="cashflow">Fluxo de Caixa</TabsTrigger>
             <TabsTrigger value="accounts">Contas</TabsTrigger>
@@ -212,10 +220,93 @@ const Treasury = () => {
           <TabsContent value="payments" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-medium">Pagamentos</CardTitle>
+                <CardTitle className="text-lg font-medium">Contas a Pagar</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-erp-gray-500">Lista de pagamentos em construção...</p>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : transactions && transactions.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Nº Doc</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                          <TableHead>Conta Bancária</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions
+                          .filter(t => t.type === 'expense' && t.status === 'pending')
+                          .map((t) => (
+                            <TableRow key={t.id}>
+                              <TableCell>{format(new Date(t.transaction_date), 'dd/MM/yyyy')}</TableCell>
+                              <TableCell className="font-mono text-sm">{t.document_number || '-'}</TableCell>
+                              <TableCell className="max-w-xs truncate">{t.description}</TableCell>
+                              <TableCell className="text-right font-medium text-red-600">{formatCurrency(t.amount)}</TableCell>
+                              <TableCell>
+                                <Select value={t.bank_account_id || ''} onValueChange={(val) => updateTransaction.mutate({
+                                  id: t.id,
+                                  transaction_number: t.transaction_number,
+                                  transaction_date: t.transaction_date,
+                                  bank_account_id: val,
+                                  type: t.type,
+                                  category: t.category,
+                                  amount: t.amount,
+                                  description: t.description,
+                                  document_number: t.document_number || undefined,
+                                  status: t.status,
+                                })}>
+                                  <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Selecionar" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {accounts?.map(acc => (
+                                      <SelectItem key={acc.id} value={acc.id}>{acc.name} - {acc.bank_name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={async () => {
+                                    const bankId = t.bank_account_id || accounts?.[0]?.id;
+                                    if (!bankId) return;
+                                    await updateTransaction.mutateAsync({
+                                      id: t.id,
+                                      transaction_number: t.transaction_number,
+                                      transaction_date: format(new Date(), 'yyyy-MM-dd'),
+                                      bank_account_id: bankId,
+                                      type: t.type,
+                                      category: t.category,
+                                      amount: t.amount,
+                                      description: t.description,
+                                      document_number: t.document_number || undefined,
+                                      status: 'completed',
+                                    });
+                                    await adjustBankBalance.mutateAsync({ bankAccountId: bankId, amountDelta: -t.amount });
+                                  }}
+                                >
+                                  Pagar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhuma conta a pagar
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -223,10 +314,93 @@ const Treasury = () => {
           <TabsContent value="receivables" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-medium">Recebimentos</CardTitle>
+                <CardTitle className="text-lg font-medium">Contas a Receber</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-erp-gray-500">Lista de recebimentos em construção...</p>
+                {isLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : transactions && transactions.length > 0 ? (
+                  <div className="border rounded-md overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Data</TableHead>
+                          <TableHead>Nº Doc</TableHead>
+                          <TableHead>Descrição</TableHead>
+                          <TableHead className="text-right">Valor</TableHead>
+                          <TableHead>Conta Bancária</TableHead>
+                          <TableHead className="text-right">Ações</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {transactions
+                          .filter(t => t.type === 'income' && t.category === 'sales' && t.status === 'pending')
+                          .map((t) => (
+                            <TableRow key={t.id}>
+                              <TableCell>{format(new Date(t.transaction_date), 'dd/MM/yyyy')}</TableCell>
+                              <TableCell className="font-mono text-sm">{t.document_number || '-'}</TableCell>
+                              <TableCell className="max-w-xs truncate">{t.description}</TableCell>
+                              <TableCell className="text-right font-medium text-green-600">{formatCurrency(t.amount)}</TableCell>
+                              <TableCell>
+                                <Select value={t.bank_account_id || ''} onValueChange={(val) => updateTransaction.mutate({
+                                  id: t.id,
+                                  transaction_number: t.transaction_number,
+                                  transaction_date: t.transaction_date,
+                                  bank_account_id: val,
+                                  type: t.type,
+                                  category: t.category,
+                                  amount: t.amount,
+                                  description: t.description,
+                                  document_number: t.document_number || undefined,
+                                  status: t.status,
+                                })}>
+                                  <SelectTrigger className="w-[200px]">
+                                    <SelectValue placeholder="Selecionar" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {accounts?.map(acc => (
+                                      <SelectItem key={acc.id} value={acc.id}>{acc.name} - {acc.bank_name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={async () => {
+                                    const bankId = t.bank_account_id || accounts?.[0]?.id;
+                                    if (!bankId) return;
+                                    await updateTransaction.mutateAsync({
+                                      id: t.id,
+                                      transaction_number: t.transaction_number,
+                                      transaction_date: format(new Date(), 'yyyy-MM-dd'),
+                                      bank_account_id: bankId,
+                                      type: t.type,
+                                      category: t.category,
+                                      amount: t.amount,
+                                      description: t.description,
+                                      document_number: t.document_number || undefined,
+                                      status: 'completed',
+                                    });
+                                    await adjustBankBalance.mutateAsync({ bankAccountId: bankId, amountDelta: t.amount });
+                                  }}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" /> Receber
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhuma conta a receber
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

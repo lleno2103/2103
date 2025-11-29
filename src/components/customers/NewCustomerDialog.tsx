@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Plus } from 'lucide-react';
 import { useCustomers } from '@/hooks/use-customers';
+import type { TablesInsert } from '@/integrations/supabase/types';
 
 const customerSchema = z.object({
     code: z.string().min(1, 'Código é obrigatório'),
@@ -27,12 +28,70 @@ export const NewCustomerDialog = () => {
     const [open, setOpen] = useState(false);
     const { createCustomer } = useCustomers();
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<CustomerFormData>({
+    const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<CustomerFormData>({
         resolver: zodResolver(customerSchema),
     });
 
+    const onlyDigits = (s: string) => s.replace(/\D/g, '');
+    const formatCpf = (d: string) => {
+        const v = d.slice(0, 11);
+        const p1 = v.slice(0, 3);
+        const p2 = v.slice(3, 6);
+        const p3 = v.slice(6, 9);
+        const p4 = v.slice(9, 11);
+        let out = p1;
+        if (p2) out += `.${p2}`;
+        if (p3) out += `.${p3}`;
+        if (p4) out += `-${p4}`;
+        return out;
+    };
+    const formatCnpj = (d: string) => {
+        const v = d.slice(0, 14);
+        const p1 = v.slice(0, 2);
+        const p2 = v.slice(2, 5);
+        const p3 = v.slice(5, 8);
+        const p4 = v.slice(8, 12);
+        const p5 = v.slice(12, 14);
+        let out = p1;
+        if (p2) out += `.${p2}`;
+        if (p3) out += `.${p3}`;
+        if (p4) out += `/${p4}`;
+        if (p5) out += `-${p5}`;
+        return out;
+    };
+    const formatCpfCnpj = (s: string) => {
+        const d = onlyDigits(s);
+        return d.length <= 11 ? formatCpf(d) : formatCnpj(d);
+    };
+    const formatPhone = (s: string) => {
+        const d = onlyDigits(s).slice(0, 11);
+        const p1 = d.slice(0, 2);
+        const p2 = d.length > 10 ? d.slice(2, 7) : d.slice(2, 6);
+        const p3 = d.length > 10 ? d.slice(7, 11) : d.slice(6, 10);
+        let out = '';
+        if (p1) out += `(${p1})`;
+        if (p2) out += ` ${p2}`;
+        if (p3) out += `-${p3}`;
+        return out;
+    };
+
+    const taxIdValue = watch('tax_id');
+    const phoneValue = watch('contact_phone');
+
     const onSubmit = async (data: CustomerFormData) => {
-        await createCustomer.mutateAsync(data);
+        const payload: TablesInsert<'customers'> = {
+            code: data.code,
+            company_name: data.company_name,
+            tax_id: onlyDigits(data.tax_id),
+            trade_name: data.trade_name || undefined,
+            contact_name: data.contact_name || undefined,
+            contact_email: data.contact_email || undefined,
+            contact_phone: data.contact_phone || undefined,
+            city: data.city || undefined,
+            state: data.state || undefined,
+            active: true,
+        };
+        await createCustomer.mutateAsync(payload);
         reset();
         setOpen(false);
     };
@@ -58,7 +117,13 @@ export const NewCustomerDialog = () => {
                         </div>
                         <div>
                             <Label htmlFor="tax_id">CNPJ/CPF *</Label>
-                            <Input id="tax_id" {...register('tax_id')} placeholder="00.000.000/0000-00" />
+                            <Input
+                                id="tax_id"
+                                {...register('tax_id')}
+                                value={taxIdValue || ''}
+                                onChange={(e) => setValue('tax_id', formatCpfCnpj(e.target.value), { shouldValidate: true })}
+                                placeholder="00.000.000/0000-00"
+                            />
                             {errors.tax_id && <p className="text-sm text-destructive">{errors.tax_id.message}</p>}
                         </div>
                     </div>
@@ -81,7 +146,13 @@ export const NewCustomerDialog = () => {
                         </div>
                         <div>
                             <Label htmlFor="contact_phone">Telefone</Label>
-                            <Input id="contact_phone" {...register('contact_phone')} placeholder="(00) 00000-0000" />
+                            <Input
+                                id="contact_phone"
+                                {...register('contact_phone')}
+                                value={phoneValue || ''}
+                                onChange={(e) => setValue('contact_phone', formatPhone(e.target.value), { shouldValidate: true })}
+                                placeholder="(00) 00000-0000"
+                            />
                         </div>
                     </div>
 

@@ -11,6 +11,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useItems, type Item } from '@/hooks/use-items';
 import { NewItemDialog } from '@/components/inventory/NewItemDialog';
+import { NewCategoryDialog } from '@/components/inventory/NewCategoryDialog';
 import { EditItemDialog } from '@/components/inventory/EditItemDialog';
 import { useState } from 'react';
 
@@ -36,7 +37,12 @@ const Items = () => {
         <PageHeader
           title="Itens de Estoque"
           description="Gerenciamento completo de produtos e serviços"
-          actions={<NewItemDialog />}
+          actions={(
+            <div className="flex gap-2">
+              <NewCategoryDialog />
+              <NewItemDialog />
+            </div>
+          )}
         />
 
         <Tabs defaultValue="list" className="space-y-4">

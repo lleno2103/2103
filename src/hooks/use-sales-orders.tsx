@@ -63,30 +63,104 @@ export const useSalesOrders = () => {
 
     // Update sales order
     const updateOrder = useMutation({
-        mutationFn: async ({ id, ...updates }: TablesUpdate<'sales_orders'> & { id: string }) => {
+        mutationFn: async ({ id, warehouseIdForDelivery, ...updates }: TablesUpdate<'sales_orders'> & { id: string, warehouseIdForDelivery?: string }) => {
             const { data, error } = await supabase
                 .from('sales_orders')
                 .update(updates)
                 .eq('id', id)
                 .select()
                 .single();
-
             if (error) throw error;
-            return data;
+            return { order: data as Tables<'sales_orders'>, warehouseIdForDelivery };
         },
-        onSuccess: () => {
+        onSuccess: async ({ order: updated, warehouseIdForDelivery }) => {
             queryClient.invalidateQueries({ queryKey: ['sales_orders'] });
-            toast({
-                title: 'Pedido atualizado!',
-                description: 'Alterações salvas com sucesso.',
-            });
+            if (updated?.status === 'approved') {
+                const { data: existing } = await supabase
+                    .from('financial_transactions')
+                    .select('id')
+                    .eq('document_number', updated.order_number)
+                    .eq('category', 'sales')
+                    .limit(1);
+                if (!existing || existing.length === 0) {
+                    const amount = updated.total_value ?? 0;
+                    if (amount > 0) {
+                        await supabase
+                            .from('financial_transactions')
+                            .insert({
+                                transaction_number: `AR-${updated.order_number}`,
+                                transaction_date: new Date().toISOString().split('T')[0],
+                                bank_account_id: null,
+                                type: 'income',
+                                category: 'sales',
+                                amount,
+                                description: `Recebível do pedido ${updated.order_number}`,
+                                document_number: updated.order_number,
+                                status: 'pending',
+                            });
+                        queryClient.invalidateQueries({ queryKey: ['financial-transactions'] });
+                    }
+                }
+            }
+            if (updated?.status === 'delivered') {
+                const { data: itemsData } = await supabase
+                    .from('sales_order_items')
+                    .select('item_id, quantity')
+                    .eq('sales_order_id', updated.id);
+                const { data: warehousesData } = await supabase
+                    .from('warehouses')
+                    .select('id')
+                    .eq('active', true)
+                    .order('code', { ascending: true })
+                    .limit(1);
+                const warehouseId = warehouseIdForDelivery || (warehousesData && warehousesData[0]?.id);
+                if (warehouseId && itemsData && itemsData.length > 0) {
+                    await Promise.all(
+                        itemsData.map(async (it: any) => {
+                            const { data: current } = await supabase
+                                .from('inventory_stock')
+                                .select('id, quantity')
+                                .eq('item_id', it.item_id)
+                                .eq('warehouse_id', warehouseId)
+                                .limit(1)
+                                .single();
+                            const currentQty = current?.quantity ?? 0;
+                            const newQty = Math.max(0, currentQty - (it.quantity ?? 0));
+                            await supabase
+                                .from('inventory_stock')
+                                .upsert({
+                                    item_id: it.item_id,
+                                    warehouse_id: warehouseId,
+                                    quantity: newQty,
+                                    updated_at: new Date().toISOString(),
+                                }, { onConflict: 'item_id,warehouse_id' });
+                            try {
+                                await supabase
+                                    .from('inventory_movements')
+                                    .insert({
+                                        item_id: it.item_id,
+                                        warehouse_id: warehouseId,
+                                        quantity_before: currentQty,
+                                        quantity_after: newQty,
+                                        delta: newQty - currentQty,
+                                        reason: 'delivery',
+                                        reference: updated.order_number,
+                                        created_at: new Date().toISOString(),
+                                    });
+                            } catch (e) {
+                                // ignore logging failure
+                            }
+                        })
+                    );
+                    queryClient.invalidateQueries({ queryKey: ['inventory_stock'] });
+                } else {
+                    toast({ variant: 'destructive', title: 'Baixa de estoque não realizada', description: 'Nenhum armazém ativo encontrado.' });
+                }
+            }
+            toast({ title: 'Pedido atualizado!', description: 'Alterações salvas com sucesso.' });
         },
         onError: (error: any) => {
-            toast({
-                variant: 'destructive',
-                title: 'Erro ao atualizar pedido',
-                description: error.message,
-            });
+            toast({ variant: 'destructive', title: 'Erro ao atualizar pedido', description: error.message });
         },
     });
 
@@ -161,10 +235,24 @@ export const useSalesOrderItems = (orderId?: string) => {
             if (error) throw error;
             return data;
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['sales_order_items', orderId] });
             // Also invalidate order to update totals if we implement triggers or calculations
             queryClient.invalidateQueries({ queryKey: ['sales_orders'] });
+            if (orderId) {
+                const { data: itemsData, error: itemsError } = await supabase
+                    .from('sales_order_items')
+                    .select('total_price')
+                    .eq('sales_order_id', orderId);
+                if (!itemsError && itemsData) {
+                    const total = itemsData.reduce((sum, it: any) => sum + (it.total_price || 0), 0);
+                    await supabase
+                        .from('sales_orders')
+                        .update({ total_value: total })
+                        .eq('id', orderId);
+                    queryClient.invalidateQueries({ queryKey: ['sales_orders'] });
+                }
+            }
             toast({
                 title: 'Item adicionado!',
                 description: 'Produto adicionado ao pedido.',
@@ -189,9 +277,23 @@ export const useSalesOrderItems = (orderId?: string) => {
 
             if (error) throw error;
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['sales_order_items', orderId] });
             queryClient.invalidateQueries({ queryKey: ['sales_orders'] });
+            if (orderId) {
+                const { data: itemsData, error: itemsError } = await supabase
+                    .from('sales_order_items')
+                    .select('total_price')
+                    .eq('sales_order_id', orderId);
+                if (!itemsError && itemsData) {
+                    const total = itemsData.reduce((sum, it: any) => sum + (it.total_price || 0), 0);
+                    await supabase
+                        .from('sales_orders')
+                        .update({ total_value: total })
+                        .eq('id', orderId);
+                    queryClient.invalidateQueries({ queryKey: ['sales_orders'] });
+                }
+            }
             toast({
                 title: 'Item removido!',
                 description: 'Produto removido do pedido.',

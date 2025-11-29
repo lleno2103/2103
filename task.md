@@ -1,0 +1,311 @@
+# 🚀 Implementação Completa do ERP 2103
+
+## 📋 ESTRUTURA DO BANCO DE DADOS CONFIRMADA
+
+### ✅ Tabelas Existentes no Supabase
+- [x] `profiles` - Perfis de usuário
+- [x] `user_roles` - Roles de usuário (admin/manager/operator)
+- [x] `customers` - Clientes
+- [x] `suppliers` - Fornecedores
+- [x] `items` - Produtos/Itens
+- [x] `product_categories` - Categorias de produtos
+- [x] `warehouses` - Armazéns
+- [x] `inventory_stock` - Estoque
+- [x] `sales_orders` - Pedidos de venda
+- [x] `sales_order_items` - Itens dos pedidos de venda
+- [x] `purchase_orders` - Pedidos de compra
+- [x] `purchase_order_items` - Itens dos pedidos de compra
+- [x] `production_orders` - Ordens de produção
+- [x] `accounting_accounts` - Plano de contas
+- [x] `accounting_entries` - Lançamentos contábeis
+- [x] `bank_accounts` - Contas bancárias
+- [x] `financial_transactions` - Transações financeiras
+- [x] `tax_obligations` - Obrigações fiscais
+- [x] `employees` - Funcionários
+- [x] `departments` - Departamentos
+- [x] `projects` - Projetos
+- [x] `service_orders` - Ordens de serviço
+
+---
+
+## 🎯 PLANO DE IMPLEMENTAÇÃO
+
+### **FASE 1: CORE MODULES (Prioridade ALTA)** 🔴
+
+#### 1.1 Módulo de Clientes
+- [x] Hook `use-customers.tsx` - CRUD completo
+- [x] Componente `NewCustomerDialog.tsx`
+- [x] Componente `EditCustomerDialog.tsx`
+- [x] Atualizar página `Customers.tsx` com dados reais
+- [ ] Adicionar validações e máscaras (CPF/CNPJ, telefone)
+- [x] Implementar busca e filtros
+
+#### 1.2 Módulo de Produtos/Itens
+- [x] Hook `use-items.tsx` - CRUD completo
+- [x] Hook `use-categories.tsx` - Gerenciar categorias
+- [x] Componente `NewItemDialog.tsx`
+- [x] Componente `EditItemDialog.tsx`
+- [x] Atualizar página `Items.tsx` com dados reais
+- [ ] Upload de imagens de produtos
+- [ ] Gestão de categorias
+
+#### 1.3 Módulo de Vendas
+- [ ] Hook `use-sales-orders.tsx` - CRUD completo
+- [ ] Componente `NewSalesOrderDialog.tsx`
+- [ ] Componente `EditSalesOrderDialog.tsx`
+- [ ] Componente `SalesOrderItemsTable.tsx`
+- [ ] Atualizar página `Orders.tsx` com dados reais
+- [ ] Implementar fluxo: Orçamento → Pedido → Fatura
+- [ ] Cálculo automático de totais
+- [ ] Integração com estoque
+
+#### 1.4 Módulo de Estoque
+- [ ] Hook `use-warehouses.tsx` - CRUD de armazéns
+- [ ] Hook `use-stock.tsx` - Gestão de estoque
+- [ ] Componente `NewWarehouseDialog.tsx`
+- [ ] Atualizar página `Warehouses.tsx`
+- [ ] Atualizar página `Inventory.tsx`
+- [ ] Implementar movimentações de estoque
+- [ ] Alertas de estoque mínimo
+
+---
+
+### **FASE 2: FINANCIAL MODULES (Prioridade ALTA)** 🔴
+
+#### 2.1 Dashboard com Dados Reais
+- [ ] Hook `use-dashboard.tsx` - Buscar métricas reais
+- [ ] Implementar gráficos com Recharts
+- [ ] Gráfico de receita mensal
+- [ ] Gráfico de vendas por categoria
+- [ ] Gráfico de fluxo de caixa
+- [ ] Alertas dinâmicos do banco
+- [ ] KPIs calculados em tempo real
+
+#### 2.2 Tesouraria
+- [ ] Hook `use-treasury.tsx` - CRUD completo
+- [ ] Hook `use-bank-accounts.tsx` - Contas bancárias
+- [ ] Componente `NewTransactionDialog.tsx`
+- [ ] Atualizar página `Treasury.tsx`
+- [ ] Fluxo de caixa projetado
+- [ ] Conciliação bancária
+- [ ] Relatórios financeiros
+
+#### 2.3 Impostos
+- [ ] Hook `use-taxes.tsx` - CRUD completo
+- [ ] Componente `NewTaxObligationDialog.tsx`
+- [ ] Atualizar página `Taxes.tsx`
+- [ ] Calendário de obrigações
+- [ ] Cálculo de impostos
+- [ ] Relatórios fiscais
+
+---
+
+### **FASE 3: PURCHASING & SUPPLIERS (Prioridade MÉDIA)** 🟡
+
+#### 3.1 Fornecedores
+- [ ] Hook `use-suppliers.tsx` - CRUD completo
+- [ ] Componente `NewSupplierDialog.tsx`
+- [ ] Componente `EditSupplierDialog.tsx`
+- [ ] Atualizar página `Suppliers.tsx`
+- [ ] Avaliação de fornecedores
+- [ ] Histórico de compras
+
+#### 3.2 Compras
+- [ ] Hook `use-purchase-orders.tsx` - CRUD completo
+- [ ] Componente `NewPurchaseOrderDialog.tsx`
+- [ ] Atualizar página `purchases/Orders.tsx`
+- [ ] Workflow de aprovação
+- [ ] Comparação de cotações
+- [ ] Integração com estoque
+
+---
+
+### **FASE 4: PRODUCTION (Prioridade MÉDIA)** 🟡
+
+#### 4.1 Ordens de Produção
+- [ ] Hook `use-production-orders.tsx` - CRUD completo
+- [ ] Componente `NewProductionOrderDialog.tsx`
+- [ ] Atualizar página `production/Orders.tsx`
+- [ ] Gantt chart interativo
+- [ ] Apontamento de produção
+- [ ] Indicadores OEE
+
+#### 4.2 Planejamento
+- [ ] Hook `use-planning.tsx`
+- [ ] Atualizar página `Planning.tsx`
+- [ ] MRP visual
+- [ ] Alocação de recursos
+- [ ] Simulador de capacidade
+
+#### 4.3 Recursos
+- [ ] Hook `use-resources.tsx`
+- [ ] Atualizar página `Resources.tsx`
+- [ ] Cadastro de máquinas
+- [ ] Calendário de manutenção
+- [ ] Histórico de paradas
+
+---
+
+### **FASE 5: HR & PROJECTS (Prioridade BAIXA)** 🟢
+
+#### 5.1 RH
+- [ ] Hook `use-employees.tsx` - CRUD completo
+- [ ] Hook `use-departments.tsx` - CRUD completo
+- [ ] Atualizar página `HR.tsx`
+- [ ] Organograma interativo
+- [ ] Gestão de competências
+- [ ] Portal do funcionário
+
+#### 5.2 Projetos
+- [ ] Hook `use-projects.tsx` - CRUD completo
+- [ ] Atualizar página `Projects.tsx`
+- [ ] WBS interativo
+- [ ] EVM (Earned Value Management)
+- [ ] Gestão de riscos
+
+#### 5.3 Serviços
+- [ ] Hook `use-service-orders.tsx` - CRUD completo
+- [ ] Atualizar página `Services.tsx`
+- [ ] Ordens de serviço eletrônicas
+- [ ] Roteamento geográfico
+- [ ] Assinatura digital
+
+---
+
+### **FASE 6: ANALYTICS & REPORTS (Prioridade BAIXA)** 🟢
+
+#### 6.1 Dashboards Personalizados
+- [ ] Atualizar página `analytics/Dashboards.tsx`
+- [ ] Builder de painéis
+- [ ] Widgets arrastáveis
+- [ ] Exportação de layouts
+
+#### 6.2 Relatórios Avançados
+- [ ] Atualizar página `analytics/Reports.tsx`
+- [ ] Drill-down multidimensional
+- [ ] Análise de coorte
+- [ ] Predições com IA
+
+#### 6.3 KPIs
+- [ ] Atualizar página `analytics/KPIs.tsx`
+- [ ] Biblioteca de indicadores
+- [ ] Meta vs. Realizado
+- [ ] Alertas inteligentes
+
+---
+
+### **FASE 7: BUG FIXES & UX (Prioridade ALTA)** 🔴
+
+#### 7.1 Correções Críticas
+- [ ] **Corrigir bug das tabs de cadastro** (Auth.tsx)
+- [ ] Adicionar loading states em todas as páginas
+- [ ] Implementar error boundaries
+- [ ] Melhorar feedback de erros
+
+#### 7.2 Melhorias de UX
+- [ ] Adicionar breadcrumbs
+- [ ] Implementar atalhos de teclado
+- [ ] Adicionar tooltips explicativos
+- [ ] Animações de transição
+- [ ] Modo offline (PWA)
+
+---
+
+### **FASE 8: DATA SEEDING (Prioridade ALTA)** 🔴
+
+#### 8.1 Dados de Teste
+- [x] Seed de clientes (20 registros)
+- [ ] Seed de fornecedores (15 registros)
+- [x] Seed de produtos (50 registros)
+- [x] Seed de categorias (10 registros)
+- [ ] Seed de pedidos de venda (30 registros)
+- [ ] Seed de pedidos de compra (20 registros)
+- [ ] Seed de lançamentos contábeis (100 registros)
+- [ ] Seed de transações financeiras (50 registros)
+- [ ] Seed de funcionários (25 registros)
+- [ ] Seed de departamentos (8 registros)
+
+---
+
+## 📊 PROGRESSO GERAL
+
+| Fase | Módulos | Status | Completude |
+|------|---------|--------|------------|
+| **Fase 1** | Core Modules | 🟡 Em andamento | 60% |
+| **Fase 2** | Financial | 🟡 Parcial (Contabilidade 50%) | 15% |
+| **Fase 3** | Purchasing | 🔴 Não iniciado | 0% |
+| **Fase 4** | Production | 🔴 Não iniciado | 0% |
+| **Fase 5** | HR & Projects | 🔴 Não iniciado | 0% |
+| **Fase 6** | Analytics | 🔴 Não iniciado | 0% |
+| **Fase 7** | Bug Fixes | 🔴 Não iniciado | 0% |
+| **Fase 8** | Data Seeding | 🟡 Em andamento | 30% |
+
+**Completude Total: ~15%**
+
+---
+
+## 🎯 ORDEM DE EXECUÇÃO RECOMENDADA
+
+### **Sprint 1 (Esta sessão):**
+1. ✅ Corrigir servidor (CONCLUÍDO)
+2. ✅ Corrigir bug das tabs de cadastro (CONCLUÍDO)
+3. ✅ Implementar hook `use-customers.tsx` (CONCLUÍDO)
+4. ✅ Implementar hook `use-items.tsx` (CONCLUÍDO)
+5. ✅ Criar componentes de diálogo para Clientes e Itens (CONCLUÍDO)
+6. ✅ Popular banco com dados de teste (CONCLUÍDO)
+
+### **Sprint 2:**
+1. Implementar hook `use-sales-orders.tsx`
+2. Criar fluxo completo de vendas
+3. Implementar gráficos no Dashboard
+4. Integração com estoque
+
+### **Sprint 3:**
+1. Módulo de Compras completo
+2. Módulo de Fornecedores
+3. Tesouraria e Fluxo de Caixa
+
+### **Sprint 4:**
+1. Módulo de Produção
+2. Planejamento e Recursos
+3. Relatórios avançados
+
+---
+
+## 📝 NOTAS TÉCNICAS
+
+### **Padrão de Hooks**
+Todos os hooks devem seguir o padrão do `use-accounting.tsx`:
+- Usar React Query para cache
+- Implementar CRUD completo (list, create, update, delete)
+- Tratamento de erros com toasts
+- Loading states
+- Optimistic updates
+
+### **Padrão de Componentes**
+Todos os diálogos devem seguir o padrão:
+- Usar shadcn/ui Dialog
+- Validação com Zod
+- React Hook Form
+- Feedback visual de loading
+- Mensagens de sucesso/erro
+
+### **Estrutura de Arquivos**
+```
+src/
+├── hooks/
+│   └── use-[module].tsx
+├── components/
+│   └── [module]/
+│       ├── New[Entity]Dialog.tsx
+│       ├── Edit[Entity]Dialog.tsx
+│       └── [Entity]Table.tsx
+└── pages/
+    └── [module]/
+        └── [Page].tsx
+```
+
+---
+
+**Última atualização:** 28/11/2025 23:17
+**Status do servidor:** ✅ Rodando em http://localhost:8080
