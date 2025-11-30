@@ -243,7 +243,7 @@ export const useSalesOrderItems = (orderId?: string) => {
                 .eq('sales_order_id', orderId);
 
             if (error) throw error;
-            return data as (SalesOrderItem & { item: Tables<'items'> })[];
+            return data as (Tables<'sales_order_items'> & { item: Tables<'items'> })[];
         },
         enabled: !!orderId,
     });

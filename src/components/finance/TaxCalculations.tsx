@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -290,7 +291,7 @@ const FinancialIndicatorsCard = () => {
           <p>Carregando indicadores...</p>
         ) : latestIndicators && latestIndicators.length > 0 ? (
           <div className="space-y-4">
-            {latestIndicators.map((indicator) => (
+            {latestIndicators.map((indicator: any) => (
               <div key={indicator.id} className="flex justify-between items-center">
                 <div>
                   <p className="font-medium">{getIndicatorLabel(indicator.indicator_name)}</p>

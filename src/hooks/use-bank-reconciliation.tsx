@@ -58,7 +58,7 @@ export const useBankReconciliations = (bankAccountId?: string) => {
       const { data, error } = await query;
       
       if (error) throw error;
-      return data as BankReconciliation[];
+      return (data || []) as unknown as BankReconciliation[];
     },
   });
 };
@@ -77,7 +77,7 @@ export const useBankReconciliationItems = (reconciliationId: string) => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as BankReconciliationItem[];
+      return (data || []) as unknown as BankReconciliationItem[];
     },
     enabled: !!reconciliationId,
   });
