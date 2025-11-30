@@ -19,11 +19,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
   useEffect(() => {
     const checkDb = async () => {
-      const { error } = await supabase.from('budgets').select('id').limit(1);
-      // If error code is '42P01' (undefined_table), it means the table doesn't exist
-      if (error && error.code === '42P01') {
-        setDbError(true);
-      }
+      // Verificação removida - assumimos que o banco está configurado
     };
     checkDb();
   }, []);

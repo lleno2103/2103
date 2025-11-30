@@ -99,6 +99,7 @@ export const useAccountingAccounts = () => {
   });
 
   return {
+    data: accounts,
     accounts,
     isLoading,
     createAccount,
@@ -201,6 +202,7 @@ export const useAccountingEntries = () => {
   });
 
   return {
+    data: entries,
     entries,
     isLoading,
     createEntry,
