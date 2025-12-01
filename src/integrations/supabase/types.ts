@@ -135,6 +135,216 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_reconciliation: {
+        Row: {
+          bank_account_id: string
+          created_at: string
+          difference: number | null
+          id: string
+          notes: string | null
+          reconciled_by: string | null
+          reconciliation_date: string
+          statement_balance: number
+          status: string
+          system_balance: number
+          updated_at: string
+        }
+        Insert: {
+          bank_account_id: string
+          created_at?: string
+          difference?: number | null
+          id?: string
+          notes?: string | null
+          reconciled_by?: string | null
+          reconciliation_date: string
+          statement_balance: number
+          status?: string
+          system_balance: number
+          updated_at?: string
+        }
+        Update: {
+          bank_account_id?: string
+          created_at?: string
+          difference?: number | null
+          id?: string
+          notes?: string | null
+          reconciled_by?: string | null
+          reconciliation_date?: string
+          statement_balance?: number
+          status?: string
+          system_balance?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_reconciliation_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_reconciliation_items: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          reconciliation_id: string
+          statement_amount: number | null
+          statement_date: string | null
+          status: string
+          transaction_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reconciliation_id: string
+          statement_amount?: number | null
+          statement_date?: string | null
+          status?: string
+          transaction_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reconciliation_id?: string
+          statement_amount?: number | null
+          statement_date?: string | null
+          status?: string
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_reconciliation_items_reconciliation_id_fkey"
+            columns: ["reconciliation_id"]
+            isOneToOne: false
+            referencedRelation: "bank_reconciliation"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_reconciliation_items_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "financial_transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budget_items: {
+        Row: {
+          actual_amount: number
+          budget_id: string
+          category: string
+          created_at: string
+          id: string
+          planned_amount: number
+          updated_at: string
+        }
+        Insert: {
+          actual_amount?: number
+          budget_id: string
+          category: string
+          created_at?: string
+          id?: string
+          planned_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          actual_amount?: number
+          budget_id?: string
+          category?: string
+          created_at?: string
+          id?: string
+          planned_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "budget_items_budget_id_fkey"
+            columns: ["budget_id"]
+            isOneToOne: false
+            referencedRelation: "budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      budgets: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          period: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          period: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          period?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cost_centers: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cost_centers_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           active: boolean | null
@@ -283,6 +493,39 @@ export type Database = {
           },
         ]
       }
+      financial_indicators: {
+        Row: {
+          calculation_details: Json | null
+          created_at: string
+          id: string
+          indicator_date: string
+          indicator_name: string
+          indicator_type: string
+          value: number
+          variation_percentage: number | null
+        }
+        Insert: {
+          calculation_details?: Json | null
+          created_at?: string
+          id?: string
+          indicator_date: string
+          indicator_name: string
+          indicator_type: string
+          value: number
+          variation_percentage?: number | null
+        }
+        Update: {
+          calculation_details?: Json | null
+          created_at?: string
+          id?: string
+          indicator_date?: string
+          indicator_name?: string
+          indicator_type?: string
+          value?: number
+          variation_percentage?: number | null
+        }
+        Relationships: []
+      }
       financial_transactions: {
         Row: {
           amount: number
@@ -335,6 +578,111 @@ export type Database = {
             columns: ["bank_account_id"]
             isOneToOne: false
             referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fixed_assets: {
+        Row: {
+          acquisition_date: string
+          acquisition_value: number
+          code: string
+          created_at: string
+          current_value: number
+          depreciation_rate_annual: number
+          description: string | null
+          id: string
+          location: string | null
+          name: string
+          residual_value: number
+          status: string
+          updated_at: string
+          useful_life_years: number
+        }
+        Insert: {
+          acquisition_date: string
+          acquisition_value: number
+          code: string
+          created_at?: string
+          current_value: number
+          depreciation_rate_annual?: number
+          description?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          residual_value?: number
+          status?: string
+          updated_at?: string
+          useful_life_years?: number
+        }
+        Update: {
+          acquisition_date?: string
+          acquisition_value?: number
+          code?: string
+          created_at?: string
+          current_value?: number
+          depreciation_rate_annual?: number
+          description?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          residual_value?: number
+          status?: string
+          updated_at?: string
+          useful_life_years?: number
+        }
+        Relationships: []
+      }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delta: number
+          id: string
+          item_id: string
+          quantity_after: number
+          quantity_before: number
+          reason: string
+          reference: string | null
+          warehouse_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delta: number
+          id?: string
+          item_id: string
+          quantity_after?: number
+          quantity_before?: number
+          reason: string
+          reference?: string | null
+          warehouse_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delta?: number
+          id?: string
+          item_id?: string
+          quantity_after?: number
+          quantity_before?: number
+          reason?: string
+          reference?: string | null
+          warehouse_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_warehouse_id_fkey"
+            columns: ["warehouse_id"]
+            isOneToOne: false
+            referencedRelation: "warehouses"
             referencedColumns: ["id"]
           },
         ]
@@ -928,6 +1276,147 @@ export type Database = {
           tax_id?: string
           trade_name?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tax_allocations: {
+        Row: {
+          allocated_value: number
+          allocation_percentage: number
+          cost_center_id: string
+          created_at: string
+          id: string
+          tax_calculation_id: string
+        }
+        Insert: {
+          allocated_value: number
+          allocation_percentage: number
+          cost_center_id: string
+          created_at?: string
+          id?: string
+          tax_calculation_id: string
+        }
+        Update: {
+          allocated_value?: number
+          allocation_percentage?: number
+          cost_center_id?: string
+          created_at?: string
+          id?: string
+          tax_calculation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_allocations_cost_center_id_fkey"
+            columns: ["cost_center_id"]
+            isOneToOne: false
+            referencedRelation: "cost_centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tax_allocations_tax_calculation_id_fkey"
+            columns: ["tax_calculation_id"]
+            isOneToOne: false
+            referencedRelation: "tax_calculations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_calculations: {
+        Row: {
+          additional_tax: number
+          base_value: number
+          calculation_details: Json | null
+          calculation_period: string
+          created_at: string
+          created_by: string | null
+          deductions: number
+          id: string
+          status: string
+          tax_amount: number
+          tax_rate: number
+          tax_type: string
+          total_tax: number
+          updated_at: string
+        }
+        Insert: {
+          additional_tax?: number
+          base_value?: number
+          calculation_details?: Json | null
+          calculation_period: string
+          created_at?: string
+          created_by?: string | null
+          deductions?: number
+          id?: string
+          status?: string
+          tax_amount?: number
+          tax_rate?: number
+          tax_type: string
+          total_tax?: number
+          updated_at?: string
+        }
+        Update: {
+          additional_tax?: number
+          base_value?: number
+          calculation_details?: Json | null
+          calculation_period?: string
+          created_at?: string
+          created_by?: string | null
+          deductions?: number
+          id?: string
+          status?: string
+          tax_amount?: number
+          tax_rate?: number
+          tax_type?: string
+          total_tax?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tax_configurations: {
+        Row: {
+          active: boolean
+          base_calculation: string
+          created_at: string
+          deduction_formula: string | null
+          description: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          max_base_value: number | null
+          rate: number
+          tax_code: string
+          tax_type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          base_calculation: string
+          created_at?: string
+          deduction_formula?: string | null
+          description: string
+          effective_from: string
+          effective_to?: string | null
+          id?: string
+          max_base_value?: number | null
+          rate: number
+          tax_code: string
+          tax_type: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          base_calculation?: string
+          created_at?: string
+          deduction_formula?: string | null
+          description?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          max_base_value?: number | null
+          rate?: number
+          tax_code?: string
+          tax_type?: string
+          updated_at?: string
         }
         Relationships: []
       }
