@@ -7,11 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Home, Plus, Trash2, Pencil } from "lucide-react";
 import { useWarehouses } from "@/hooks/use-warehouses";
 import { NewWarehouseDialog } from "@/components/inventory/NewWarehouseDialog";
+import { EditWarehouseDialog } from "@/components/inventory/EditWarehouseDialog";
 import { useState } from "react";
+import type { Tables } from "@/integrations/supabase/types";
 
 export default function Warehouses() {
   const { warehouses, isLoading, deleteWarehouse } = useWarehouses();
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingWarehouse, setEditingWarehouse] = useState<Tables<'warehouses'> | null>(null);
 
   return (
     <MainLayout>
@@ -60,7 +62,7 @@ export default function Warehouses() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => setEditingId(wh.id)}
+                              onClick={() => setEditingWarehouse(wh)}
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -88,6 +90,14 @@ export default function Warehouses() {
           </CardContent>
         </Card>
       </div>
+
+      {editingWarehouse && (
+        <EditWarehouseDialog
+          warehouse={editingWarehouse}
+          open={!!editingWarehouse}
+          onOpenChange={(open) => !open && setEditingWarehouse(null)}
+        />
+      )}
     </MainLayout>
   );
 }
