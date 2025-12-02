@@ -6,18 +6,66 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table";
-import { FileText, Filter, Loader2, Plus, Search, Users } from 'lucide-react';
-import { useSuppliers } from '@/hooks/use-suppliers';
+import { Badge } from '@/components/ui/badge';
+import { Edit, FileText, Filter, Loader2, Plus, Search, Trash2, Users } from 'lucide-react';
+import { useSuppliers, Supplier } from '@/hooks/use-suppliers';
+import NewSupplierDialog from '@/components/purchases/NewSupplierDialog';
+import EditSupplierDialog from '@/components/purchases/EditSupplierDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Suppliers() {
-  const { suppliers, isLoading } = useSuppliers();
+  const { suppliers, isLoading, deleteSupplier } = useSuppliers();
   const [searchTerm, setSearchTerm] = useState('');
+  const [newDialogOpen, setNewDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
   const filteredSuppliers = suppliers?.filter(supplier =>
     supplier.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.tax_id.includes(searchTerm)
   );
+
+  const handleEdit = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (selectedSupplier) {
+      deleteSupplier(selectedSupplier.id);
+      setDeleteDialogOpen(false);
+      setSelectedSupplier(null);
+    }
+  };
+
+  const getRatingBadge = (rating: string | null) => {
+    switch (rating) {
+      case 'A':
+        return <Badge className="bg-green-500">A - Excelente</Badge>;
+      case 'B':
+        return <Badge className="bg-blue-500">B - Bom</Badge>;
+      case 'C':
+        return <Badge className="bg-amber-500">C - Regular</Badge>;
+      default:
+        return <Badge variant="outline">N/A</Badge>;
+    }
+  };
 
   return (
     <MainLayout>
@@ -26,7 +74,7 @@ export default function Suppliers() {
           title="Fornecedores" 
           description="Gerenciamento de fornecedores"
           actions={
-            <Button>
+            <Button onClick={() => setNewDialogOpen(true)}>
               <Plus size={16} className="mr-2" />
               Novo Fornecedor
             </Button>
@@ -72,12 +120,13 @@ export default function Suppliers() {
                     <TableHead>Contato</TableHead>
                     <TableHead>Cidade/UF</TableHead>
                     <TableHead>Avaliação</TableHead>
+                    <TableHead className="w-24">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                      <TableCell colSpan={6} className="text-center py-8">
                         <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
                       </TableCell>
                     </TableRow>
@@ -98,21 +147,30 @@ export default function Suppliers() {
                           </div>
                         </TableCell>
                         <TableCell>{supplier.city && supplier.state ? `${supplier.city}/${supplier.state}` : '-'}</TableCell>
+                        <TableCell>{getRatingBadge(supplier.rating)}</TableCell>
                         <TableCell>
-                          <div className="flex items-center">
-                            <span className={`w-2 h-2 rounded-full mr-2 ${
-                              supplier.rating === 'A' ? 'bg-green-500' :
-                              supplier.rating === 'B' ? 'bg-blue-500' :
-                              'bg-amber-500'
-                            }`}></span>
-                            <span>{supplier.rating || 'N/A'}</span>
+                          <div className="flex gap-1">
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              onClick={() => handleEdit(supplier)}
+                            >
+                              <Edit size={14} />
+                            </Button>
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              onClick={() => handleDelete(supplier)}
+                            >
+                              <Trash2 size={14} className="text-destructive" />
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         Nenhum fornecedor encontrado
                       </TableCell>
                     </TableRow>
@@ -123,6 +181,31 @@ export default function Suppliers() {
           </CardContent>
         </Card>
       </div>
+
+      <NewSupplierDialog open={newDialogOpen} onOpenChange={setNewDialogOpen} />
+      <EditSupplierDialog 
+        open={editDialogOpen} 
+        onOpenChange={setEditDialogOpen} 
+        supplier={selectedSupplier}
+      />
+      
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o fornecedor "{selectedSupplier?.company_name}"?
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MainLayout>
   );
 }
