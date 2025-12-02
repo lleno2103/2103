@@ -1160,6 +1160,101 @@ export type Database = {
           },
         ]
       }
+      purchase_quotation_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_id: string
+          quantity: number
+          quotation_id: string
+          total_value: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_id: string
+          quantity: number
+          quotation_id: string
+          total_value: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          quantity?: number
+          quotation_id?: string
+          total_value?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_quotation_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_quotation_items_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_quotations: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          notes: string | null
+          quotation_date: string
+          quotation_number: string
+          status: string
+          supplier_id: string
+          total_value: number | null
+          updated_at: string | null
+          validity_date: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          quotation_date?: string
+          quotation_number: string
+          status?: string
+          supplier_id: string
+          total_value?: number | null
+          updated_at?: string | null
+          validity_date?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          quotation_date?: string
+          quotation_number?: string
+          status?: string
+          supplier_id?: string
+          total_value?: number | null
+          updated_at?: string | null
+          validity_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_quotations_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales_order_items: {
         Row: {
           created_at: string | null

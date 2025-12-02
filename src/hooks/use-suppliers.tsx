@@ -43,7 +43,7 @@ export const useSuppliers = () => {
   });
 
   const createSupplier = useMutation({
-    mutationFn: async (supplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (supplier: Omit<Supplier, 'id'>) => {
       const { data, error } = await supabase
         .from('suppliers')
         .insert([supplier])
@@ -69,10 +69,63 @@ export const useSuppliers = () => {
     },
   });
 
+  const updateSupplier = useMutation({
+    mutationFn: async (supplier: Partial<Supplier> & { id: string }) => {
+      const { id, ...updates } = supplier;
+      const { error } = await supabase
+        .from('suppliers')
+        .update(updates)
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      toast({
+        title: 'Fornecedor atualizado',
+        description: 'Fornecedor atualizado com sucesso',
+      });
+    },
+    onError: (error: DatabaseError) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao atualizar fornecedor',
+        description: error.message,
+      });
+    },
+  });
+
+  const deleteSupplier = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('suppliers')
+        .update({ active: false })
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['suppliers'] });
+      toast({
+        title: 'Fornecedor excluído',
+        description: 'Fornecedor excluído com sucesso',
+      });
+    },
+    onError: (error: DatabaseError) => {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao excluir fornecedor',
+        description: error.message,
+      });
+    },
+  });
+
   return {
     suppliers,
     isLoading,
     error,
     createSupplier: createSupplier.mutate,
+    updateSupplier: updateSupplier.mutate,
+    deleteSupplier: deleteSupplier.mutate,
   };
 };
